@@ -1,0 +1,860 @@
+<title>LIGHTWISE FARM Wiring</title>
+<meta name="description" content="แบบต่อสายวงจร LIGHTWISE FARM — ESP32 คุมรีเลย์ 6 ช่อง เซนเซอร์ความชื้นดิน 2 จุด สวิตช์เลือกโหมด และสตริป SK6812">
+
+<style>
+:root {
+  --bg:          #F5F7F3;
+  --surface:     #FFFFFF;
+  --surface-2:   #EDF1EA;
+  --ink:         #141C17;
+  --ink-2:       #4A5850;
+  --muted:       #7C8B82;
+  --line:        #D9E0D6;
+  --line-strong: #A9B7A7;
+
+  --brand:  #1B6B48;
+  --accent: #E2700A;
+
+  /* สีสายไฟ — ใช้สื่อความหมาย ไม่ใช่ตกแต่ง */
+  --w-ac:   #CC3B2B;   /* ไฟบ้าน 220V */
+  --w-12v:  #E2700A;   /* ไฟ DC 12V */
+  --w-5v:   #8E5BD0;   /* ไฟ DC 5V */
+  --w-33:   #C0407F;   /* ไฟ 3.3V */
+  --w-gnd:  #6E7C74;   /* กราวด์ */
+  --w-sig:  #2F7FA8;   /* สายสัญญาณ */
+  --danger: #CC3B2B;
+
+  --font: "Leelawadee UI","Noto Sans Thai","IBM Plex Sans Thai",
+          -apple-system,"Segoe UI",system-ui,sans-serif;
+  --mono: "Cascadia Mono","JetBrains Mono","SF Mono",Consolas,ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:          #0E1310;
+    --surface:     #161D18;
+    --surface-2:   #1D2620;
+    --ink:         #E9EEE9;
+    --ink-2:       #AFBCB3;
+    --muted:       #87978D;
+    --line:        #26302A;
+    --line-strong: #46544B;
+
+    --brand:  #4FBF8B;
+    --accent: #F5913C;
+
+    --w-ac:   #F2695A;
+    --w-12v:  #F5913C;
+    --w-5v:   #B98BEB;
+    --w-33:   #E06BA6;
+    --w-gnd:  #8D9C93;
+    --w-sig:  #6FAFD0;
+    --danger: #F2695A;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:          #0E1310;
+  --surface:     #161D18;
+  --surface-2:   #1D2620;
+  --ink:         #E9EEE9;
+  --ink-2:       #AFBCB3;
+  --muted:       #87978D;
+  --line:        #26302A;
+  --line-strong: #46544B;
+
+  --brand:  #4FBF8B;
+  --accent: #F5913C;
+
+  --w-ac:   #F2695A;
+  --w-12v:  #F5913C;
+  --w-5v:   #B98BEB;
+  --w-33:   #E06BA6;
+  --w-gnd:  #8D9C93;
+  --w-sig:  #6FAFD0;
+  --danger: #F2695A;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: 16px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1060px; margin-inline: auto; padding: 48px 24px 80px; }
+h1, h2, h3 { margin: 0; letter-spacing: -.02em; line-height: 1.25; text-wrap: balance; }
+h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 800; }
+h2 { font-size: 21px; font-weight: 700; margin-top: 12px; }
+h3 { font-size: 15px; font-weight: 700; }
+p  { margin: 0; }
+
+.eyebrow {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--muted);
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+.lede { color: var(--ink-2); margin-top: 14px; max-width: 64ch; }
+
+section { margin-top: 52px; padding-top: 30px; border-top: 1px solid var(--line); }
+.sec-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+.sec-head p { color: var(--ink-2); font-size: 14.5px; max-width: 70ch; }
+.num {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+  color: var(--accent); text-transform: uppercase;
+}
+
+figure {
+  margin: 0; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px; padding: 20px 20px 14px; overflow-x: auto;
+}
+figure svg { display: block; width: 100%; max-width: 100%; height: auto; min-width: 620px; }
+figcaption {
+  font-size: 13px; color: var(--muted); margin-top: 14px;
+  padding-top: 12px; border-top: 1px solid var(--line); line-height: 1.6;
+}
+
+/* ---- ป้ายสีสายไฟ ---- */
+.keys { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 18px; }
+.key { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11.5px; color: var(--ink-2); }
+.key i { width: 18px; height: 3px; border-radius: 2px; flex: none; }
+
+/* ---- ตาราง ---- */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; }
+th, td { text-align: left; padding: 10px 16px; border-top: 1px solid var(--line); font-size: 14px; vertical-align: top; }
+thead th { border-top: 0; background: var(--surface-2); font-size: 11px; font-family: var(--mono);
+           letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+td.pin { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; width: 74px; }
+td.wire { width: 96px; }
+.chip { font-family: var(--mono); font-size: 11px; padding: 2px 7px; border-radius: 4px;
+        border: 1px solid currentColor; white-space: nowrap; }
+
+/* ---- กล่องเตือน ---- */
+.keys .key, .warn b, .warn div { min-width: 0; }
+.warn {
+  display: flex; gap: 14px; align-items: flex-start; margin-top: 18px;
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--danger) 42%, var(--line));
+  border-left-width: 4px; border-radius: 8px; padding: 14px 16px;
+}
+.warn b { color: var(--danger); font-family: var(--mono); font-size: 11px;
+          letter-spacing: .14em; flex: none; padding-top: 3px; }
+.warn div { font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+.warn div strong { color: var(--ink); }
+
+.note {
+  margin-top: 18px; background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 14px 18px; font-size: 14px; color: var(--ink-2); line-height: 1.6;
+}
+
+/* ---- เช็กลิสต์ ---- */
+ol.check { margin: 0; padding-left: 0; list-style: none; counter-reset: c;
+           display: flex; flex-direction: column; gap: 12px; }
+/* ตัวเลขวางแบบ absolute ไม่ใช้ grid/flex บน li
+   เพราะถ้าใช้ ข้อความในนั้นจะถูกซอยเป็นไอเทมทีละก้อนแล้วขึ้นบรรทัดใหม่ทุกคำ */
+ol.check li { counter-increment: c; position: relative; padding-left: 44px;
+              font-size: 14.5px; color: var(--ink-2); line-height: 1.65; }
+ol.check li::before {
+  content: counter(c); position: absolute; left: 0; top: 1px;
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  color: var(--accent); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 6px; width: 30px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+}
+ol.check li strong { color: var(--ink); }
+
+code { font-family: var(--mono); font-size: .92em; background: var(--surface-2);
+       padding: 1px 5px; border-radius: 4px; }
+
+footer { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--line);
+         font-family: var(--mono); font-size: 11.5px; color: var(--muted); letter-spacing: .05em; }
+
+@media (max-width: 620px) { .wrap { padding: 32px 16px 60px; } }
+@media print {
+  body { background: #fff; color: #000; }
+  section { page-break-inside: avoid; }
+  figure { break-inside: avoid; }
+}
+</style>
+
+<div class="wrap">
+
+  <div class="eyebrow">LIGHTWISE FARM · ผังต่อสาย · 21 ส.ค. 2026</div>
+  <h1>แบบต่อสายวงจร</h1>
+  <p class="lede">
+    ESP32 คุมรีเลย์ 6 ช่อง (ปั๊มน้ำ · หลอดสเปกตรัม · หลอดเหลือง · หลอดเขียว · พัดลม 2 ตัว)
+    อ่านความชื้นดิน 2 จุด อุณหภูมิ–ความชื้นอากาศ ความเข้มแสง
+    และมีสวิตช์เลือกโหมด AUTO / OFF / MANUAL อยู่หน้ากล่อง
+  </p>
+
+  <div class="keys">
+    <span class="key"><i style="background:var(--w-ac)"></i>ไฟบ้าน 220V AC</span>
+    <span class="key"><i style="background:var(--w-12v)"></i>ไฟ 12V DC</span>
+    <span class="key"><i style="background:var(--w-5v)"></i>ไฟ 5V DC</span>
+    <span class="key"><i style="background:var(--w-33)"></i>ไฟ 3.3V</span>
+    <span class="key"><i style="background:var(--w-gnd)"></i>กราวด์ GND</span>
+    <span class="key"><i style="background:var(--w-sig)"></i>สายสัญญาณ</span>
+  </div>
+
+  <!-- ==================== 1 · POWER ==================== -->
+  <section>
+    <div class="sec-head">
+      <span class="num">01 · ระบบไฟ</span>
+      <h2>ไฟเดินจากปลั๊กไปถึงโหลดอย่างไร</h2>
+      <p>
+        ดูรูปนี้ก่อนต่ออย่างอื่น เพราะเป็นจุดที่ผิดแล้วอันตรายหรือบอร์ดพัง
+        ไฟ 220V แตะแค่หน้าสัมผัสรีเลย์กับตัวหลอด ไม่เข้าไปในวงจรควบคุมเลย
+      </p>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 900 470" role="img"
+           aria-label="ผังจ่ายไฟ: ปลั๊ก 220V ผ่านเบรกเกอร์กันดูด ฟิวส์ และสวิตช์หลัก แยกไปหน้าสัมผัสรีเลย์สำหรับหลอดไฟ และไปแหล่งจ่าย 12V 5A ซึ่งจ่ายพัดลมกับปั๊มโดยตรง และผ่าน LM2596 สองตัวลดเป็น 5V สำหรับวงจรควบคุมและสตริป">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5"
+                  markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="context-stroke"/>
+          </marker>
+        </defs>
+
+        <!-- เขตไฟ 220V -->
+        <rect x="14" y="18" width="872" height="112" rx="8"
+              fill="none" stroke="var(--danger)" stroke-width="1.4" stroke-dasharray="7 5" opacity=".75"/>
+        <text x="26" y="40" font-family="var(--mono)" font-size="11" fill="var(--danger)"
+              letter-spacing="1.4">เขตไฟ 220V — ต้องอยู่ในกล่องปิดทั้งหมด</text>
+
+        <!-- แถวไฟ AC -->
+        <g font-family="var(--font)" font-size="12" fill="var(--ink)">
+          <rect x="26"  y="56" width="118" height="50" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+          <text x="85"  y="78" text-anchor="middle">ปลั๊ก 3 ขา</text>
+          <text x="85"  y="94" text-anchor="middle" font-size="10.5" fill="var(--muted)">220V + กราวด์</text>
+
+          <rect x="182" y="56" width="118" height="50" rx="6" fill="var(--surface-2)" stroke="var(--danger)" stroke-width="1.8"/>
+          <text x="241" y="78" text-anchor="middle">RCD 30 mA</text>
+          <text x="241" y="94" text-anchor="middle" font-size="10.5" fill="var(--danger)">บังคับต้องมี</text>
+
+          <rect x="338" y="56" width="104" height="50" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+          <text x="390" y="78" text-anchor="middle">ฟิวส์ 2A</text>
+          <text x="390" y="94" text-anchor="middle" font-size="10.5" fill="var(--muted)">แบบช้า</text>
+
+          <rect x="480" y="56" width="104" height="50" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+          <text x="532" y="78" text-anchor="middle">สวิตช์ KCD</text>
+          <text x="532" y="94" text-anchor="middle" font-size="10.5" fill="var(--muted)">เปิด/ปิดหลัก</text>
+
+          <rect x="640" y="46" width="230" height="70" rx="6" fill="var(--surface)" stroke="var(--w-ac)" stroke-width="1.6"/>
+          <text x="755" y="68" text-anchor="middle" font-weight="600">หน้าสัมผัสรีเลย์ 3 ช่อง</text>
+          <text x="755" y="86" text-anchor="middle" font-size="11" fill="var(--ink-2)">หลอดสเปกตรัม · เหลือง · เขียว</text>
+          <text x="755" y="103" text-anchor="middle" font-size="10.5" fill="var(--muted)">GPIO 26 / 16 / 17</text>
+        </g>
+
+        <g stroke="var(--w-ac)" stroke-width="2.4" fill="none" marker-end="url(#ar)">
+          <line x1="144" y1="81" x2="178" y2="81"/>
+          <line x1="300" y1="81" x2="334" y2="81"/>
+          <line x1="442" y1="81" x2="476" y2="81"/>
+          <line x1="584" y1="81" x2="636" y2="81"/>
+        </g>
+
+        <!-- แยกลงไปแหล่งจ่าย 12V -->
+        <path d="M532 106 V 168" stroke="var(--w-ac)" stroke-width="2.4" fill="none" marker-end="url(#ar)"/>
+        <text x="542" y="142" font-family="var(--mono)" font-size="10.5" fill="var(--muted)">220V เข้า PSU</text>
+
+        <!-- PSU 12V -->
+        <g font-family="var(--font)" font-size="12" fill="var(--ink)">
+          <rect x="430" y="170" width="204" height="52" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+          <text x="532" y="192" text-anchor="middle" font-weight="600">Switching 12V 5A</text>
+          <text x="532" y="209" text-anchor="middle" font-size="10.5" fill="var(--muted)">แหล่งจ่าย DC ตัวเดียวของทั้งระบบ</text>
+        </g>
+
+        <!-- โหลด 12V ตรง -->
+        <path d="M634 196 H 742" stroke="var(--w-12v)" stroke-width="2.4" fill="none" marker-end="url(#ar)"/>
+        <g font-family="var(--font)" font-size="12" fill="var(--ink)">
+          <rect x="746" y="170" width="130" height="52" rx="6" fill="var(--surface)" stroke="var(--w-12v)" stroke-width="1.6"/>
+          <text x="811" y="190" text-anchor="middle">พัดลม × 2</text>
+          <text x="811" y="207" text-anchor="middle" font-size="11">+ ปั๊มน้ำ</text>
+        </g>
+        <text x="640" y="188" font-family="var(--mono)" font-size="10" fill="var(--w-12v)">12V ผ่านรีเลย์</text>
+
+        <!-- LM2596 สองตัว -->
+        <path d="M470 222 V 268" stroke="var(--w-12v)" stroke-width="2.4" fill="none" marker-end="url(#ar)"/>
+        <path d="M596 222 V 268" stroke="var(--w-12v)" stroke-width="2.4" fill="none" marker-end="url(#ar)"/>
+
+        <g font-family="var(--font)" font-size="12" fill="var(--ink)">
+          <rect x="366" y="270" width="208" height="50" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+          <text x="470" y="290" text-anchor="middle" font-weight="600">LM2596 ตัวที่ 1</text>
+          <text x="470" y="307" text-anchor="middle" font-size="10.5" fill="var(--muted)">12V → 5V วงจรควบคุม</text>
+
+          <rect x="492" y="270" width="0" height="0"/>
+          <rect x="596" y="270" width="208" height="50" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)" stroke-dasharray="5 4"/>
+          <text x="700" y="290" text-anchor="middle" font-weight="600">LM2596 ตัวที่ 2</text>
+          <text x="700" y="307" text-anchor="middle" font-size="10.5" fill="var(--muted)">12V → 5V สตริป (ควรเพิ่ม)</text>
+        </g>
+
+        <!-- โหลด 5V -->
+        <path d="M470 320 V 366" stroke="var(--w-5v)" stroke-width="2.4" fill="none" marker-end="url(#ar)"/>
+        <path d="M700 320 V 366" stroke="var(--w-5v)" stroke-width="2.4" fill="none" marker-end="url(#ar)"/>
+
+        <g font-family="var(--font)" font-size="12" fill="var(--ink)">
+          <rect x="284" y="368" width="312" height="66" rx="6" fill="var(--surface)" stroke="var(--w-5v)" stroke-width="1.6"/>
+          <text x="440" y="390" text-anchor="middle" font-weight="600">ESP32 + คอยล์รีเลย์ 6 ช่อง + เซนเซอร์</text>
+          <text x="440" y="408" text-anchor="middle" font-size="11" fill="var(--ink-2)">รวมราว 560 mA</text>
+          <text x="440" y="425" text-anchor="middle" font-size="10.5" fill="var(--muted)">ESP32 ~250 · รีเลย์ ~280 · เซนเซอร์ ~30</text>
+
+          <rect x="614" y="368" width="186" height="66" rx="6" fill="var(--surface)" stroke="var(--w-5v)" stroke-width="1.6" stroke-dasharray="5 4"/>
+          <text x="707" y="392" text-anchor="middle" font-weight="600">สตริป SK6812</text>
+          <text x="707" y="410" text-anchor="middle" font-size="11" fill="var(--ink-2)">30 ดวง ~680 mA</text>
+        </g>
+
+        <!-- กราวด์ร่วม -->
+        <line x1="60" y1="452" x2="840" y2="452" stroke="var(--w-gnd)" stroke-width="2.4"/>
+        <text x="60" y="446" font-family="var(--mono)" font-size="11" fill="var(--w-gnd)">GND ทุกอย่างต่อร่วมเส้นเดียวกัน — ESP32 · รีเลย์ · เซนเซอร์ · สตริป · PSU</text>
+      </svg>
+      <figcaption>
+        ไฟ 220V หยุดอยู่ที่หน้าสัมผัสรีเลย์ ไม่เข้าฝั่งควบคุม
+        แหล่งจ่าย 12V ตัวเดียวเลี้ยงพัดลมกับปั๊มโดยตรง แล้วผ่าน LM2596 ลดเป็น 5V ให้วงจรควบคุม
+        กล่องประ = ยังไม่มี ควรเพิ่ม
+      </figcaption>
+    </figure>
+
+    <div class="warn">
+      <b>ต้องอ่าน</b>
+      <div>
+        <strong>สตริปกิน 680 mA ทำให้ LM2596 ตัวเดียวรับไม่อยู่</strong> —
+        รวมกับวงจรควบคุมจะเป็น ~1.25 A ที่ 12V→5V ตัวโมดูลจะทิ้งความร้อนราว 2.5 W ร้อนจนน่าห่วง
+        ให้เพิ่ม LM2596 อีกตัว (~49 บาท) จ่ายสตริปแยก หรือติดฮีตซิงก์แล้วลด
+        <code>STRIP_BUDGET_MA</code> เหลือ 400
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 2 · PIN MAP ==================== -->
+  <section>
+    <div class="sec-head">
+      <span class="num">02 · ผังขา</span>
+      <h2>ขา GPIO ทั้ง 14 เส้น</h2>
+      <p>ตรงกับค่าคงที่ในไฟล์ <code>lightwise_farm.ino</code> ทุกตัว ถ้าย้ายขาต้องแก้ในโค้ดด้วย</p>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 940 600" role="img"
+           aria-label="ผังขา ESP32: ฝั่งซ้าย 6 ขาเป็นเอาต์พุตไปขา IN ของรีเลย์ ฝั่งขวา 8 ขาเป็นเซนเซอร์ สวิตช์ จอ และสตริป">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5"
+                  markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="context-stroke"/>
+          </marker>
+        </defs>
+
+        <!-- บอร์ด -->
+        <rect x="392" y="44" width="156" height="512" rx="10"
+              fill="var(--surface-2)" stroke="var(--line-strong)" stroke-width="1.6"/>
+        <text x="470" y="74" text-anchor="middle" font-family="var(--font)" font-size="14"
+              font-weight="700" fill="var(--ink)">ESP32</text>
+        <text x="470" y="92" text-anchor="middle" font-family="var(--mono)" font-size="10"
+              fill="var(--muted)">CH340 Type-C</text>
+        <text x="470" y="540" text-anchor="middle" font-family="var(--mono)" font-size="10"
+              fill="var(--muted)">WROOM-32</text>
+
+        <!-- ฝั่งซ้าย: เอาต์พุตไปรีเลย์ -->
+        <g font-family="var(--font)" font-size="12" fill="var(--ink)">
+          <!-- 25 ปั๊ม -->
+          <line x1="392" y1="128" x2="286" y2="128" stroke="var(--w-sig)" stroke-width="2.2" marker-end="url(#ar2)"/>
+          <text x="400" y="132" font-family="var(--mono)" font-size="12" font-weight="600">25</text>
+          <rect x="46" y="110" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--w-12v)" stroke-width="1.5"/>
+          <text x="58" y="133">รีเลย์ 1 · IN1 → ปั๊มน้ำ</text>
+
+          <!-- 26 สเปกตรัม -->
+          <line x1="392" y1="196" x2="286" y2="196" stroke="var(--w-sig)" stroke-width="2.2" marker-end="url(#ar2)"/>
+          <text x="400" y="200" font-family="var(--mono)" font-size="12" font-weight="600">26</text>
+          <rect x="46" y="178" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--w-ac)" stroke-width="1.5"/>
+          <text x="58" y="201">รีเลย์ 1 · IN2 → หลอดสเปกตรัม</text>
+
+          <!-- 27 พัดลมบน -->
+          <line x1="392" y1="264" x2="286" y2="264" stroke="var(--w-sig)" stroke-width="2.2" marker-end="url(#ar2)"/>
+          <text x="400" y="268" font-family="var(--mono)" font-size="12" font-weight="600">27</text>
+          <rect x="46" y="246" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--w-12v)" stroke-width="1.5"/>
+          <text x="58" y="269">รีเลย์ 2 · IN1 → พัดลมบน</text>
+
+          <!-- 18 พัดลมล่าง -->
+          <line x1="392" y1="332" x2="286" y2="332" stroke="var(--w-sig)" stroke-width="2.2" marker-end="url(#ar2)"/>
+          <text x="400" y="336" font-family="var(--mono)" font-size="12" font-weight="600">18</text>
+          <rect x="46" y="314" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--w-12v)" stroke-width="1.5"/>
+          <text x="58" y="337">รีเลย์ 2 · IN2 → พัดลมล่าง</text>
+          <text x="290" y="322" font-family="var(--mono)" font-size="9.5" fill="var(--danger)">ย้ายจาก 12</text>
+
+          <!-- 16 เหลือง -->
+          <line x1="392" y1="400" x2="286" y2="400" stroke="var(--w-sig)" stroke-width="2.2" marker-end="url(#ar2)"/>
+          <text x="400" y="404" font-family="var(--mono)" font-size="12" font-weight="600">16</text>
+          <rect x="46" y="382" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--w-ac)" stroke-width="1.5"/>
+          <text x="58" y="405">รีเลย์ 3 · IN1 → หลอดเหลือง</text>
+
+          <!-- 17 เขียว -->
+          <line x1="392" y1="468" x2="286" y2="468" stroke="var(--w-sig)" stroke-width="2.2" marker-end="url(#ar2)"/>
+          <text x="400" y="472" font-family="var(--mono)" font-size="12" font-weight="600">17</text>
+          <rect x="46" y="450" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--w-ac)" stroke-width="1.5"/>
+          <text x="58" y="473">รีเลย์ 3 · IN2 → หลอดเขียว</text>
+        </g>
+
+        <!-- ฝั่งขวา: อินพุตและจอ -->
+        <g font-family="var(--font)" font-size="12" fill="var(--ink)">
+          <!-- 4 DHT -->
+          <line x1="548" y1="112" x2="656" y2="112" stroke="var(--w-sig)" stroke-width="2.2" marker-start="url(#ar2)"/>
+          <text x="540" y="116" text-anchor="end" font-family="var(--mono)" font-size="12" font-weight="600">4</text>
+          <rect x="660" y="94" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--w-sig)" stroke-width="1.5"/>
+          <text x="672" y="117">DHT22 · อุณหภูมิ + ความชื้น</text>
+
+          <!-- 32 -->
+          <line x1="548" y1="170" x2="656" y2="170" stroke="var(--brand)" stroke-width="2.2" marker-start="url(#ar2)"/>
+          <text x="540" y="174" text-anchor="end" font-family="var(--mono)" font-size="12" font-weight="600">32</text>
+          <rect x="660" y="152" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--brand)" stroke-width="1.5"/>
+          <text x="672" y="175">ความชื้นดิน · แปลงบน</text>
+
+          <!-- 33 -->
+          <line x1="548" y1="228" x2="656" y2="228" stroke="var(--brand)" stroke-width="2.2" marker-start="url(#ar2)"/>
+          <text x="540" y="232" text-anchor="end" font-family="var(--mono)" font-size="12" font-weight="600">33</text>
+          <rect x="660" y="210" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--brand)" stroke-width="1.5"/>
+          <text x="672" y="233">ความชื้นดิน · แปลงล่าง</text>
+
+          <!-- 34 -->
+          <line x1="548" y1="286" x2="656" y2="286" stroke="var(--w-33)" stroke-width="2.2" marker-start="url(#ar2)"/>
+          <text x="540" y="290" text-anchor="end" font-family="var(--mono)" font-size="12" font-weight="600">34</text>
+          <rect x="660" y="268" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--w-33)" stroke-width="1.5"/>
+          <text x="672" y="291">สวิตช์ ช่อง 11 → AUTO</text>
+
+          <!-- 35 -->
+          <line x1="548" y1="344" x2="656" y2="344" stroke="var(--w-33)" stroke-width="2.2" marker-start="url(#ar2)"/>
+          <text x="540" y="348" text-anchor="end" font-family="var(--mono)" font-size="12" font-weight="600">35</text>
+          <rect x="660" y="326" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--w-33)" stroke-width="1.5"/>
+          <text x="672" y="349">สวิตช์ ช่อง 23 → MANUAL</text>
+          <text x="660" y="378" font-family="var(--mono)" font-size="9.5" fill="var(--danger)">34/35 ต้องมี R pull-down 10k</text>
+
+          <!-- 21/22 I2C -->
+          <line x1="548" y1="416" x2="656" y2="416" stroke="var(--w-sig)" stroke-width="2.2"/>
+          <line x1="548" y1="430" x2="656" y2="430" stroke="var(--w-sig)" stroke-width="2.2"/>
+          <text x="540" y="420" text-anchor="end" font-family="var(--mono)" font-size="12" font-weight="600">21</text>
+          <text x="540" y="440" text-anchor="end" font-family="var(--mono)" font-size="12" font-weight="600">22</text>
+          <rect x="660" y="400" width="238" height="46" rx="5" fill="var(--surface)" stroke="var(--w-sig)" stroke-width="1.5"/>
+          <text x="672" y="418">จอ OLED + BH1750</text>
+          <text x="672" y="436" font-size="10.5" fill="var(--muted)">21 = SCL · 22 = SDA (สลับจากมาตรฐาน)</text>
+
+          <!-- 13 strip -->
+          <line x1="548" y1="492" x2="656" y2="492" stroke="var(--w-sig)" stroke-width="2.2" marker-end="url(#ar2)"/>
+          <text x="540" y="496" text-anchor="end" font-family="var(--mono)" font-size="12" font-weight="600">13</text>
+          <rect x="660" y="474" width="238" height="36" rx="5" fill="var(--surface)" stroke="var(--w-sig)" stroke-width="1.5"/>
+          <text x="672" y="497">สตริป SK6812 · DIN</text>
+        </g>
+
+        <text x="46" y="76" font-family="var(--mono)" font-size="10.5" fill="var(--muted)"
+              letter-spacing="1.2">เอาต์พุต → ขา IN ของรีเลย์</text>
+        <text x="898" y="76" text-anchor="end" font-family="var(--mono)" font-size="10.5" fill="var(--muted)"
+              letter-spacing="1.2">เซนเซอร์ · สวิตช์ · จอ · สตริป</text>
+      </svg>
+      <figcaption>
+        กรอบกล่องบอกว่าโหลดปลายทางเป็นไฟชนิดไหน — <span style="color:var(--w-ac)">แดง = 220V</span> ·
+        <span style="color:var(--w-12v)">ส้ม = 12V</span> ·
+        <span style="color:var(--brand)">เขียว = อนาล็อก</span> ·
+        <span style="color:var(--w-33)">ชมพู = อินพุต 3.3V</span>
+        สายที่วิ่งจาก ESP32 ไปรีเลย์เป็นสายสัญญาณ 3.3V ทั้งหมด ไม่ใช่สายไฟเลี้ยง
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ==================== 3 · RELAY ==================== -->
+  <section>
+    <div class="sec-head">
+      <span class="num">03 · รีเลย์</span>
+      <h2>จัดกลุ่มรีเลย์ตามชนิดไฟ ไม่ใช่ตามหมายเลขโมดูล</h2>
+      <p>
+        6 ช่องนี้แบ่งเป็นฝั่ง 220V สามช่องและฝั่ง 12V สามช่อง
+        ห้ามให้โมดูลตัวเดียวมีทั้ง 220V และ 12V บนแผ่นเดียวกัน
+        ส่วน GPIO ผูกกับหน้าที่ ไม่ผูกกับโมดูล — จะสลับว่าสาย IN เส้นไหนไปเสียบโมดูลไหนก็ได้
+      </p>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 900 440" role="img"
+           aria-label="การจัดกลุ่มรีเลย์: สามช่องฝั่ง 220V ต่อหลอดสเปกตรัม เหลือง เขียว และสามช่องฝั่ง 12V ต่อปั๊มกับพัดลมสองตัว ขา NO ของทุกช่องรวมเป็นบัสเส้นเดียวไปหาโหลด">
+        <defs>
+          <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5"
+                  markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="context-stroke"/>
+          </marker>
+        </defs>
+
+        <!-- ================= ฝั่ง AC ================= -->
+        <rect x="16" y="16" width="868" height="196" rx="8"
+              fill="none" stroke="var(--w-ac)" stroke-width="1.4" stroke-dasharray="7 5" opacity=".8"/>
+        <text x="30" y="38" font-family="var(--mono)" font-size="11" fill="var(--w-ac)" letter-spacing="1.3">
+          ฝั่ง 220V AC — รีเลย์ 3 ช่อง · ต้องอยู่คนละโมดูลกับฝั่ง DC</text>
+
+        <g font-family="var(--font)" font-size="12" fill="var(--ink)">
+          <rect x="34"  y="54" width="120" height="98" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+          <text x="94"  y="78"  text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="600">GPIO 26</text>
+          <text x="94"  y="96"  text-anchor="middle" font-size="10.5" fill="var(--muted)">IN</text>
+          <text x="94"  y="120" text-anchor="middle">COM</text>
+          <text x="94"  y="140" text-anchor="middle" fill="var(--w-ac)" font-weight="600">NO</text>
+
+          <rect x="196" y="54" width="120" height="98" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+          <text x="256" y="78"  text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="600">GPIO 16</text>
+          <text x="256" y="96"  text-anchor="middle" font-size="10.5" fill="var(--muted)">IN</text>
+          <text x="256" y="120" text-anchor="middle">COM</text>
+          <text x="256" y="140" text-anchor="middle" fill="var(--w-ac)" font-weight="600">NO</text>
+
+          <rect x="358" y="54" width="120" height="98" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+          <text x="418" y="78"  text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="600">GPIO 17</text>
+          <text x="418" y="96"  text-anchor="middle" font-size="10.5" fill="var(--muted)">IN</text>
+          <text x="418" y="120" text-anchor="middle">COM</text>
+          <text x="418" y="140" text-anchor="middle" fill="var(--w-ac)" font-weight="600">NO</text>
+
+          <rect x="536" y="54" width="160" height="98" rx="6" fill="var(--surface)" stroke="var(--w-ac)" stroke-width="1.6"/>
+          <text x="616" y="82"  text-anchor="middle">หลอดสเปกตรัม</text>
+          <text x="616" y="106" text-anchor="middle">หลอดเหลือง</text>
+          <text x="616" y="130" text-anchor="middle">หลอดเขียว</text>
+
+          <text x="726" y="82"  font-family="var(--mono)" font-size="10.5" fill="var(--muted)">สาย L จากฟิวส์</text>
+          <text x="726" y="100" font-family="var(--mono)" font-size="10.5" fill="var(--muted)">เข้า COM ทุกช่อง</text>
+          <text x="726" y="124" font-family="var(--mono)" font-size="10.5" fill="var(--muted)">NO ออกไปหลอด</text>
+          <text x="726" y="142" font-family="var(--mono)" font-size="10.5" fill="var(--muted)">อีกขาต่อสาย N ร่วม</text>
+        </g>
+
+        <!-- บัสขา NO เดินใต้กล่อง ไม่วิ่งทับตัวหนังสือ -->
+        <g stroke="var(--w-ac)" stroke-width="2.2" fill="none">
+          <line x1="94"  y1="152" x2="94"  y2="176"/>
+          <line x1="256" y1="152" x2="256" y2="176"/>
+          <line x1="418" y1="152" x2="418" y2="176"/>
+          <line x1="94"  y1="176" x2="616" y2="176"/>
+          <line x1="616" y1="176" x2="616" y2="156" marker-end="url(#ar3)"/>
+        </g>
+        <g fill="var(--w-ac)">
+          <circle cx="256" cy="176" r="3"/><circle cx="418" cy="176" r="3"/>
+        </g>
+        <text x="120" y="196" font-family="var(--mono)" font-size="10" fill="var(--muted)">ขา NO ทั้ง 3 ช่องรวมเป็นบัสเส้นเดียว</text>
+
+        <!-- ================= ฝั่ง DC ================= -->
+        <rect x="16" y="228" width="868" height="196" rx="8"
+              fill="none" stroke="var(--w-12v)" stroke-width="1.4" stroke-dasharray="7 5" opacity=".8"/>
+        <text x="30" y="250" font-family="var(--mono)" font-size="11" fill="var(--w-12v)" letter-spacing="1.3">
+          ฝั่ง 12V DC — รีเลย์ 3 ช่อง</text>
+
+        <g font-family="var(--font)" font-size="12" fill="var(--ink)">
+          <rect x="34"  y="266" width="120" height="98" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+          <text x="94"  y="290" text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="600">GPIO 25</text>
+          <text x="94"  y="308" text-anchor="middle" font-size="10.5" fill="var(--muted)">IN</text>
+          <text x="94"  y="332" text-anchor="middle">COM</text>
+          <text x="94"  y="352" text-anchor="middle" fill="var(--w-12v)" font-weight="600">NO</text>
+
+          <rect x="196" y="266" width="120" height="98" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+          <text x="256" y="290" text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="600">GPIO 27</text>
+          <text x="256" y="308" text-anchor="middle" font-size="10.5" fill="var(--muted)">IN</text>
+          <text x="256" y="332" text-anchor="middle">COM</text>
+          <text x="256" y="352" text-anchor="middle" fill="var(--w-12v)" font-weight="600">NO</text>
+
+          <rect x="358" y="266" width="120" height="98" rx="6" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+          <text x="418" y="290" text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="600">GPIO 18</text>
+          <text x="418" y="308" text-anchor="middle" font-size="10.5" fill="var(--muted)">IN</text>
+          <text x="418" y="332" text-anchor="middle">COM</text>
+          <text x="418" y="352" text-anchor="middle" fill="var(--w-12v)" font-weight="600">NO</text>
+
+          <rect x="536" y="266" width="160" height="98" rx="6" fill="var(--surface)" stroke="var(--w-12v)" stroke-width="1.6"/>
+          <text x="616" y="294" text-anchor="middle">ปั๊มน้ำ</text>
+          <text x="616" y="318" text-anchor="middle">พัดลมบน</text>
+          <text x="616" y="342" text-anchor="middle">พัดลมล่าง</text>
+
+          <text x="726" y="294" font-family="var(--mono)" font-size="10.5" fill="var(--muted)">+12V จาก PSU</text>
+          <text x="726" y="312" font-family="var(--mono)" font-size="10.5" fill="var(--muted)">เข้า COM ทุกช่อง</text>
+          <text x="726" y="336" font-family="var(--mono)" font-size="10.5" fill="var(--muted)">NO ออกไปโหลด</text>
+          <text x="726" y="354" font-family="var(--mono)" font-size="10.5" fill="var(--muted)">ขาลบต่อ GND ร่วม</text>
+        </g>
+
+        <g stroke="var(--w-12v)" stroke-width="2.2" fill="none">
+          <line x1="94"  y1="364" x2="94"  y2="388"/>
+          <line x1="256" y1="364" x2="256" y2="388"/>
+          <line x1="418" y1="364" x2="418" y2="388"/>
+          <line x1="94"  y1="388" x2="616" y2="388"/>
+          <line x1="616" y1="388" x2="616" y2="368" marker-end="url(#ar3)"/>
+        </g>
+        <g fill="var(--w-12v)">
+          <circle cx="256" cy="388" r="3"/><circle cx="418" cy="388" r="3"/>
+        </g>
+        <text x="120" y="408" font-family="var(--mono)" font-size="10" fill="var(--muted)">แต่ละโหลดมีสาย NO ของตัวเอง วาดรวมเพื่อให้อ่านง่าย</text>
+      </svg>
+      <figcaption>
+        ต่อแบบ COM–NO ทั้งหมด คือปกติวงจรขาด พอ ESP32 สั่งจึงต่อ
+        ถ้าใช้ NC จะกลับกัน — ไฟดับตอนบูตจะกลายเป็นเปิดโหลด
+      </figcaption>
+    </figure>
+
+    <div class="warn">
+      <b>ตรวจก่อน</b>
+      <div>
+        <strong>ปั๊มน้ำเป็น 12V หรือ 220V?</strong>
+        ผังที่ให้มาวางปั๊ม (GPIO25) กับหลอดสเปกตรัม (GPIO26) ไว้บนโมดูลรีเลย์ตัวเดียวกัน
+        ถ้าปั๊มเป็น <strong>12V</strong> โมดูลนั้นจะมีทั้ง 12V และ 220V บนแผ่นเดียว —
+        ให้ย้ายสาย IN ของปั๊มไปเสียบโมดูลเดียวกับพัดลม แล้วเอาหลอดเหลืองมาแทนที่ช่องนั้น
+        <strong>ไม่ต้องแก้โค้ด</strong> เพราะ GPIO ผูกกับหน้าที่ ไม่ผูกกับโมดูล
+        ถ้าปั๊มเป็น <strong>220V</strong> ผังเดิมถูกแล้ว ไม่ต้องย้ายอะไร
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 4 · SWITCH ==================== -->
+  <section>
+    <div class="sec-head">
+      <span class="num">04 · สวิตช์เลือกโหมด</span>
+      <h2>ทำไม GPIO 34 / 35 ต้องมีตัวต้านทานเพิ่ม</h2>
+      <p>
+        สองขานี้อ่านค่าได้เท่านั้น และไม่มีตัวต้านทานดึงค่าอยู่ข้างในเหมือนขาอื่น
+        ถ้าไม่ต่อ R ลง GND ตอนสวิตช์ยังไม่ต่อ ขาจะลอย อ่านได้ทั้ง 0 และ 1 สลับไปมาเอง
+        แล้วโหมดจะเปลี่ยนมั่วเองตลอด
+      </p>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 900 330" role="img"
+           aria-label="วงจรสวิตช์เลือกโหมด: ไฟ 3.3V เข้าขาร่วมของสวิตช์ LA38-11X2 ช่อง 11 ไป GPIO34 ช่อง 23 ไป GPIO35 แต่ละขามีตัวต้านทาน 10k ลงกราวด์ พร้อมตารางสามตำแหน่ง">
+        <!-- ราง 3.3V -->
+        <line x1="60" y1="52" x2="470" y2="52" stroke="var(--w-33)" stroke-width="2.6"/>
+        <text x="60" y="42" font-family="var(--mono)" font-size="11.5" fill="var(--w-33)" font-weight="600">3V3</text>
+        <line x1="150" y1="52" x2="150" y2="96" stroke="var(--w-33)" stroke-width="2.6"/>
+
+        <!-- สวิตช์ -->
+        <rect x="80" y="96" width="140" height="130" rx="6"
+              fill="var(--surface-2)" stroke="var(--line-strong)" stroke-width="1.6"/>
+        <text x="150" y="120" text-anchor="middle" font-family="var(--font)" font-size="12"
+              font-weight="700" fill="var(--ink)">LA38-11X2</text>
+        <text x="150" y="137" text-anchor="middle" font-family="var(--mono)" font-size="10"
+              fill="var(--muted)">3 ตำแหน่ง</text>
+        <text x="96" y="172" font-family="var(--mono)" font-size="11.5" fill="var(--ink)">ช่อง 11</text>
+        <text x="96" y="204" font-family="var(--mono)" font-size="11.5" fill="var(--ink)">ช่อง 23</text>
+        <circle cx="214" cy="168" r="3.4" fill="var(--w-33)"/>
+        <circle cx="214" cy="200" r="3.4" fill="var(--w-33)"/>
+
+        <!-- สายไป GPIO -->
+        <line x1="218" y1="168" x2="392" y2="168" stroke="var(--w-33)" stroke-width="2.4"/>
+        <line x1="218" y1="200" x2="392" y2="200" stroke="var(--w-33)" stroke-width="2.4"/>
+
+        <!-- R pull-down -->
+        <g stroke="var(--w-gnd)" stroke-width="2.2" fill="none">
+          <line x1="300" y1="168" x2="300" y2="244"/>
+          <line x1="340" y1="200" x2="340" y2="244"/>
+          <line x1="252" y1="286" x2="392" y2="286"/>
+        </g>
+        <rect x="288" y="244" width="24" height="30" rx="3" fill="var(--surface)" stroke="var(--w-gnd)" stroke-width="1.6"/>
+        <rect x="328" y="244" width="24" height="30" rx="3" fill="var(--surface)" stroke="var(--w-gnd)" stroke-width="1.6"/>
+        <line x1="300" y1="274" x2="300" y2="286" stroke="var(--w-gnd)" stroke-width="2.2"/>
+        <line x1="340" y1="274" x2="340" y2="286" stroke="var(--w-gnd)" stroke-width="2.2"/>
+        <text x="264" y="264" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--w-gnd)">10k</text>
+        <text x="366" y="264" font-family="var(--mono)" font-size="11" fill="var(--w-gnd)">10k</text>
+        <!-- สัญลักษณ์กราวด์ -->
+        <line x1="308" y1="286" x2="332" y2="286" stroke="var(--w-gnd)" stroke-width="3"/>
+        <line x1="312" y1="292" x2="328" y2="292" stroke="var(--w-gnd)" stroke-width="3"/>
+        <line x1="316" y1="298" x2="324" y2="298" stroke="var(--w-gnd)" stroke-width="3"/>
+        <text x="252" y="312" font-family="var(--mono)" font-size="10.5" fill="var(--w-gnd)">GND</text>
+
+        <!-- ESP32 -->
+        <rect x="392" y="96" width="118" height="176" rx="8"
+              fill="var(--surface-2)" stroke="var(--line-strong)" stroke-width="1.6"/>
+        <text x="451" y="124" text-anchor="middle" font-family="var(--font)" font-size="13"
+              font-weight="700" fill="var(--ink)">ESP32</text>
+        <text x="402" y="172" font-family="var(--mono)" font-size="11.5" font-weight="600" fill="var(--ink)">GPIO 34</text>
+        <text x="402" y="204" font-family="var(--mono)" font-size="11.5" font-weight="600" fill="var(--ink)">GPIO 35</text>
+        <text x="451" y="252" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--danger)">input only</text>
+
+        <!-- ตาราง 3 ตำแหน่ง -->
+        <g font-family="var(--font)" font-size="12" fill="var(--ink)">
+          <text x="570" y="60" font-family="var(--mono)" font-size="10.5" fill="var(--muted)" letter-spacing="1.3">
+            สามตำแหน่งของสวิตช์</text>
+
+          <rect x="570" y="74" width="306" height="52" rx="6" fill="var(--surface)" stroke="var(--brand)" stroke-width="1.6"/>
+          <text x="586" y="96" font-weight="700" fill="var(--brand)">AUTO</text>
+          <text x="586" y="114" font-size="11" fill="var(--ink-2)">ช่อง 11 ต่อ · GPIO34 = 1 · GPIO35 = 0</text>
+
+          <rect x="570" y="136" width="306" height="52" rx="6" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.6"/>
+          <text x="586" y="158" font-weight="700">OFF</text>
+          <text x="586" y="176" font-size="11" fill="var(--ink-2)">ไม่ต่อทั้งคู่ · 34 = 0 · 35 = 0 · ดับทุกอย่างทันที</text>
+
+          <rect x="570" y="198" width="306" height="52" rx="6" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6"/>
+          <text x="586" y="220" font-weight="700" fill="var(--accent)">MANUAL</text>
+          <text x="586" y="238" font-size="11" fill="var(--ink-2)">ช่อง 23 ต่อ · 34 = 0 · 35 = 1 · สั่งผ่าน Serial</text>
+
+          <rect x="570" y="260" width="306" height="46" rx="6" fill="var(--surface)" stroke="var(--danger)" stroke-width="1.6" stroke-dasharray="5 4"/>
+          <text x="586" y="280" font-weight="700" fill="var(--danger)">ต่อทั้งคู่ = สายผิด</text>
+          <text x="586" y="297" font-size="11" fill="var(--ink-2)">โค้ดถือเป็น OFF แล้วเตือนใน Serial</text>
+        </g>
+      </svg>
+      <figcaption>
+        สวิตช์ต่อ 3V3 เข้าขา R 10k ดึงลง GND ไว้ตลอด — สวิตช์ต่อ = อ่านได้ 1 · ไม่ต่อ = อ่านได้ 0 แน่นอน
+        ไม่มี R ตัวนี้ ค่าจะลอยและโหมดจะสลับเอง
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ==================== 5 · SENSOR DETAIL ==================== -->
+  <section>
+    <div class="sec-head">
+      <span class="num">05 · รายละเอียดปลายทาง</span>
+      <h2>เซนเซอร์ 3 ชนิดและสตริป ต่อยังไง</h2>
+      <p>สามตัวซ้ายใช้ไฟ 3.3V จาก ESP32 ได้เลย ส่วนสตริปต้องแยกไป 5V และมีอุปกรณ์เสริม 2 ตัว</p>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 900 330" role="img"
+           aria-label="รายละเอียดการต่อ: เซนเซอร์ความชื้นดินสองตัวใช้ไฟ 3.3V ส่งค่าอนาล็อกเข้า GPIO32 และ 33, DHT22 ใช้ไฟ 3.3V มีตัวต้านทาน 10k ดึงขึ้น ส่งเข้า GPIO4, และสตริป SK6812 ใช้ไฟ 5V มีตัวต้านทาน 330 โอห์มอนุกรมที่ขาสัญญาณและตัวเก็บประจุ 1000uF คร่อมไฟเลี้ยง">
+        <!-- เซนเซอร์ความชื้น -->
+        <rect x="20" y="30" width="266" height="264" rx="8" fill="none" stroke="var(--line)" stroke-width="1.4"/>
+        <text x="34" y="52" font-family="var(--mono)" font-size="10.5" fill="var(--muted)" letter-spacing="1.2">
+          ความชื้นดิน × 2</text>
+
+        <g font-family="var(--font)" font-size="11.5" fill="var(--ink)">
+          <rect x="38" y="68" width="112" height="86" rx="5" fill="var(--surface-2)" stroke="var(--brand)" stroke-width="1.5"/>
+          <text x="94" y="90"  text-anchor="middle" font-size="11">capacitive</text>
+          <text x="94" y="107" text-anchor="middle" font-size="11">แปลงบน</text>
+          <text x="48" y="130" font-family="var(--mono)" font-size="10">VCC</text>
+          <text x="48" y="145" font-family="var(--mono)" font-size="10">GND</text>
+          <text x="112" y="138" font-family="var(--mono)" font-size="10">AOUT</text>
+
+          <rect x="38" y="172" width="112" height="86" rx="5" fill="var(--surface-2)" stroke="var(--brand)" stroke-width="1.5"/>
+          <text x="94" y="194" text-anchor="middle" font-size="11">capacitive</text>
+          <text x="94" y="211" text-anchor="middle" font-size="11">แปลงล่าง</text>
+          <text x="48" y="234" font-family="var(--mono)" font-size="10">VCC</text>
+          <text x="48" y="249" font-family="var(--mono)" font-size="10">GND</text>
+          <text x="112" y="242" font-family="var(--mono)" font-size="10">AOUT</text>
+        </g>
+        <line x1="150" y1="134" x2="230" y2="134" stroke="var(--brand)" stroke-width="2.2"/>
+        <line x1="150" y1="238" x2="230" y2="238" stroke="var(--brand)" stroke-width="2.2"/>
+        <text x="234" y="130" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">GPIO 32</text>
+        <text x="234" y="234" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">GPIO 33</text>
+        <text x="34" y="284" font-family="var(--mono)" font-size="10" fill="var(--w-33)">VCC → 3V3 · GND → GND</text>
+
+        <!-- DHT22 -->
+        <rect x="304" y="30" width="240" height="264" rx="8" fill="none" stroke="var(--line)" stroke-width="1.4"/>
+        <text x="318" y="52" font-family="var(--mono)" font-size="10.5" fill="var(--muted)" letter-spacing="1.2">
+          DHT22</text>
+
+        <g font-family="var(--font)" font-size="11.5" fill="var(--ink)">
+          <rect x="322" y="96" width="104" height="94" rx="5" fill="var(--surface-2)" stroke="var(--w-sig)" stroke-width="1.5"/>
+          <text x="374" y="126" text-anchor="middle">DHT22</text>
+          <text x="374" y="146" text-anchor="middle" font-size="10.5" fill="var(--muted)">อุณหภูมิ</text>
+          <text x="374" y="163" text-anchor="middle" font-size="10.5" fill="var(--muted)">ความชื้น</text>
+        </g>
+        <!-- ราง 3.3V -->
+        <line x1="330" y1="72" x2="510" y2="72" stroke="var(--w-33)" stroke-width="2.4"/>
+        <text x="330" y="66" font-family="var(--mono)" font-size="10.5" fill="var(--w-33)">3V3</text>
+        <line x1="374" y1="96" x2="374" y2="72" stroke="var(--w-33)" stroke-width="2.4"/>
+        <!-- data + pull-up -->
+        <line x1="426" y1="143" x2="510" y2="143" stroke="var(--w-sig)" stroke-width="2.2"/>
+        <line x1="470" y1="143" x2="470" y2="112" stroke="var(--w-gnd)" stroke-width="2"/>
+        <rect x="458" y="82" width="24" height="30" rx="3" fill="var(--surface)" stroke="var(--w-gnd)" stroke-width="1.6"/>
+        <line x1="470" y1="82" x2="470" y2="72" stroke="var(--w-gnd)" stroke-width="2"/>
+        <text x="490" y="102" font-family="var(--mono)" font-size="10.5" fill="var(--w-gnd)">10k</text>
+        <text x="452" y="172" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">GPIO 4</text>
+        <text x="318" y="220" font-family="var(--mono)" font-size="10" fill="var(--muted)">โมดูลสำเร็จส่วนใหญ่มี R</text>
+        <text x="318" y="236" font-family="var(--mono)" font-size="10" fill="var(--muted)">ตัวนี้มาให้แล้ว ไม่ต้องเพิ่ม</text>
+
+        <!-- สตริป -->
+        <rect x="562" y="30" width="318" height="264" rx="8" fill="none" stroke="var(--line)" stroke-width="1.4"/>
+        <text x="576" y="52" font-family="var(--mono)" font-size="10.5" fill="var(--muted)" letter-spacing="1.2">
+          สตริป SK6812 RGBW 30 ดวง</text>
+
+        <!-- ราง 5V -->
+        <line x1="584" y1="80" x2="856" y2="80" stroke="var(--w-5v)" stroke-width="2.6"/>
+        <text x="584" y="74" font-family="var(--mono)" font-size="10.5" fill="var(--w-5v)" font-weight="600">+5V</text>
+        <!-- ราง GND -->
+        <line x1="584" y1="250" x2="856" y2="250" stroke="var(--w-gnd)" stroke-width="2.6"/>
+        <text x="584" y="266" font-family="var(--mono)" font-size="10.5" fill="var(--w-gnd)" font-weight="600">GND</text>
+
+        <!-- ตัวเก็บประจุ -->
+        <line x1="640" y1="80" x2="640" y2="146" stroke="var(--w-5v)" stroke-width="2.2"/>
+        <line x1="624" y1="146" x2="656" y2="146" stroke="var(--ink)" stroke-width="3"/>
+        <line x1="624" y1="158" x2="656" y2="158" stroke="var(--ink)" stroke-width="3"/>
+        <line x1="640" y1="158" x2="640" y2="250" stroke="var(--w-gnd)" stroke-width="2.2"/>
+        <text x="664" y="148" font-family="var(--mono)" font-size="10.5" fill="var(--ink-2)">1000 µF</text>
+        <text x="664" y="163" font-family="var(--mono)" font-size="9.5" fill="var(--muted)">ขั้ว + ไปฝั่ง 5V</text>
+
+        <!-- สตริป -->
+        <rect x="736" y="112" width="120" height="120" rx="5" fill="var(--surface-2)" stroke="var(--w-5v)" stroke-width="1.5"/>
+        <text x="796" y="140" text-anchor="middle" font-family="var(--font)" font-size="11.5" fill="var(--ink)">สตริป</text>
+        <text x="796" y="158" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">SK6812</text>
+        <text x="796" y="174" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">RGBW</text>
+        <text x="744" y="204" font-family="var(--mono)" font-size="10" fill="var(--ink)">DIN</text>
+        <line x1="796" y1="112" x2="796" y2="80" stroke="var(--w-5v)" stroke-width="2.2"/>
+        <line x1="796" y1="232" x2="796" y2="250" stroke="var(--w-gnd)" stroke-width="2.2"/>
+
+        <!-- DIN ผ่าน R 330 -->
+        <line x1="736" y1="200" x2="710" y2="200" stroke="var(--w-sig)" stroke-width="2.2"/>
+        <rect x="676" y="188" width="34" height="24" rx="3" fill="var(--surface)" stroke="var(--w-sig)" stroke-width="1.6"/>
+        <text x="693" y="182" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--w-sig)">330Ω</text>
+        <line x1="676" y1="200" x2="596" y2="200" stroke="var(--w-sig)" stroke-width="2.2"/>
+        <text x="592" y="204" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">GPIO 13</text>
+      </svg>
+      <figcaption>
+        R 330Ω อนุกรมที่ขา DIN กันสัญญาณสะท้อนกลับมาทำให้สีเพี้ยน
+        ส่วน C 1000 µF รับกระแสกระชากตอนไฟทั้งเส้นเปลี่ยนสีพร้อมกัน ไม่ให้แรงดันตกจนบอร์ดรีเซ็ต
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ==================== ตารางสรุป ==================== -->
+  <section>
+    <div class="sec-head">
+      <span class="num">06 · ตารางสรุป</span>
+      <h2>เช็กทีละเส้นตอนต่อสาย</h2>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>ขา</th><th>ชนิด</th><th>ต่อไปที่</th><th>หมายเหตุ</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="pin">25</td><td class="wire"><span class="chip" style="color:var(--w-12v)">OUT</span></td><td>รีเลย์ · ปั๊มน้ำ</td><td>เช็กว่าปั๊มเป็น 12V หรือ 220V</td></tr>
+          <tr><td class="pin">26</td><td class="wire"><span class="chip" style="color:var(--w-ac)">OUT</span></td><td>รีเลย์ · หลอดสเปกตรัม</td><td>จ่ายทั้งชั้นบนและล่าง</td></tr>
+          <tr><td class="pin">27</td><td class="wire"><span class="chip" style="color:var(--w-12v)">OUT</span></td><td>รีเลย์ · พัดลมบน</td><td>เปิดที่ 29 °C</td></tr>
+          <tr><td class="pin">18</td><td class="wire"><span class="chip" style="color:var(--w-12v)">OUT</span></td><td>รีเลย์ · พัดลมล่าง</td><td><strong>ย้ายจาก GPIO12</strong> — 12 ทำบอร์ดบูตไม่ขึ้น</td></tr>
+          <tr><td class="pin">16</td><td class="wire"><span class="chip" style="color:var(--w-ac)">OUT</span></td><td>รีเลย์ · หลอดเหลือง</td><td>ใช้ได้เฉพาะบอร์ดไม่มี PSRAM</td></tr>
+          <tr><td class="pin">17</td><td class="wire"><span class="chip" style="color:var(--w-ac)">OUT</span></td><td>รีเลย์ · หลอดเขียว</td><td>ใช้ได้เฉพาะบอร์ดไม่มี PSRAM</td></tr>
+          <tr><td class="pin">4</td><td class="wire"><span class="chip" style="color:var(--w-sig)">IN</span></td><td>DHT22 · DATA</td><td>R 10k ดึงขึ้น 3V3 (โมดูลมักมีมาแล้ว)</td></tr>
+          <tr><td class="pin">32</td><td class="wire"><span class="chip" style="color:var(--brand)">ADC</span></td><td>ความชื้นดินบน · AOUT</td><td>ADC1 ใช้ร่วมกับ WiFi ได้</td></tr>
+          <tr><td class="pin">33</td><td class="wire"><span class="chip" style="color:var(--brand)">ADC</span></td><td>ความชื้นดินล่าง · AOUT</td><td>ADC1 ใช้ร่วมกับ WiFi ได้</td></tr>
+          <tr><td class="pin">34</td><td class="wire"><span class="chip" style="color:var(--w-33)">IN</span></td><td>สวิตช์ ช่อง 11</td><td><strong>ต้องมี R 10k ลง GND</strong></td></tr>
+          <tr><td class="pin">35</td><td class="wire"><span class="chip" style="color:var(--w-33)">IN</span></td><td>สวิตช์ ช่อง 23</td><td><strong>ต้องมี R 10k ลง GND</strong></td></tr>
+          <tr><td class="pin">21</td><td class="wire"><span class="chip" style="color:var(--w-sig)">I2C</span></td><td>OLED + BH1750 · SCL</td><td>สลับจากค่ามาตรฐาน ESP32</td></tr>
+          <tr><td class="pin">22</td><td class="wire"><span class="chip" style="color:var(--w-sig)">I2C</span></td><td>OLED + BH1750 · SDA</td><td>OLED 0x3C · BH1750 0x23</td></tr>
+          <tr><td class="pin">13</td><td class="wire"><span class="chip" style="color:var(--w-sig)">OUT</span></td><td>สตริป SK6812 · DIN</td><td>ผ่าน R 330Ω · ไฟเลี้ยงแยก 5V</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ==================== ลำดับต่อ ==================== -->
+  <section>
+    <div class="sec-head">
+      <span class="num">07 · ลำดับการต่อ</span>
+      <h2>ต่อตามลำดับนี้ แล้วทดสอบทีละขั้น</h2>
+      <p>อย่าต่อทุกอย่างแล้วเสียบไฟทีเดียว เจอปัญหาจะหาไม่เจอว่าอยู่จุดไหน</p>
+    </div>
+
+    <ol class="check">
+      <li><strong>ต่อ GND ให้ครบก่อนอย่างอื่น</strong> — ESP32 · โมดูลรีเลย์ทุกตัว · เซนเซอร์ · สตริป · PSU ต้องอยู่บนกราวด์เส้นเดียวกัน ระบบที่กราวด์ไม่ร่วมกันจะอ่านค่าเพี้ยนแบบหาสาเหตุไม่เจอ</li>
+      <li><strong>ต่อฝั่ง 5V และ 3.3V</strong> แล้วเสียบไฟดูก่อนว่า ESP32 บูตขึ้น — ยังไม่ต้องต่อ 220V</li>
+      <li><strong>ต่อ R 10k สองตัวที่ GPIO34 / 35</strong> แล้วต่อสวิตช์ อัปโหลดโค้ด กด <code>s</code> ดูว่าค่า 11 กับ 23 เปลี่ยนตามที่หมุนจริง</li>
+      <li><strong>ต่อ I2C</strong> (21 / 22) เช็กว่าบูตแล้วขึ้น <code>OLED : พร้อม</code> ถ้าขึ้นไม่พบจอ ให้สลับสองเส้นนี้</li>
+      <li><strong>ต่อ DHT22 และเซนเซอร์ความชื้น</strong> แล้วกด <code>c</code> คาลิเบรต — ยกขึ้นอากาศจดค่า จุ่มน้ำจดค่า เอาไปใส่ <code>WATER_ADC_DRY</code> / <code>WATER_ADC_WET</code></li>
+      <li><strong>ต่อขา IN ของรีเลย์ทั้ง 6 ช่อง</strong> แต่ยังไม่ต่อโหลด หมุนสวิตช์ไป MANUAL แล้วกด <code>1</code>–<code>5</code> ฟังเสียงรีเลย์คลิกให้ครบทุกช่อง</li>
+      <li><strong>ต่อโหลด 12V</strong> (พัดลม ปั๊ม) ทดสอบซ้ำ — ปั๊มให้ยกสายลงถังน้ำก่อน อย่าเดินแห้ง</li>
+      <li><strong>ต่อไฟ 220V เป็นอย่างสุดท้าย</strong> ปิดเบรกเกอร์ก่อนต่อ ต่อเสร็จปิดกล่องแล้วค่อยเปิด เช็กว่ามี RCD 30 mA อยู่ต้นทาง</li>
+      <li><strong>ต่อสตริปเป็นชิ้นสุดท้าย</strong> พร้อม R 330Ω และ C 1000 µF จ่ายไฟจาก LM2596 ตัวที่สอง</li>
+      <li><strong>หมุนสวิตช์ไป AUTO</strong> ปล่อยทิ้ง 1 ชั่วโมง แล้วดู CSV ว่าค่าเดินสมเหตุสมผล</li>
+    </ol>
+
+    <div class="note">
+      <strong>เช็กเรื่องบอร์ดก่อนต่อ GPIO16/17:</strong>
+      เสียบ USB เปิด Serial Monitor ที่ 115200 แล้วรีเซ็ตบอร์ด
+      ถ้าข้อความตอนบูตมีคำว่า <code>PSRAM</code> แปลว่าเป็นบอร์ด WROVER
+      ขา 16 กับ 17 ถูกใช้ไปแล้ว ต้องย้ายหลอดเหลืองกับเขียวไป GPIO 5 และ 23 แล้วแก้ในโค้ดด้วย
+    </div>
+  </section>
+
+  <footer>
+    LIGHTWISE FARM · ผังต่อสาย 21 ส.ค. 2026 · ตรงกับ lightwise_farm.ino เวอร์ชันเดียวกัน
+  </footer>
+</div>
