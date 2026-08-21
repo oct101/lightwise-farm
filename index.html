@@ -10,421 +10,332 @@
 <meta property="og:description" content="ระบบไฟปลูกพืชอัจฉริยะ ควบคุมไฟ LED Full Spectrum และพัดลมระบายอากาศอัตโนมัติด้วย ESP32 พร้อมเซนเซอร์วัดแสง อุณหภูมิ ความชื้น">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231B6B48'/%3E%3Cpath d='M9 21c0-6 4-10 10-10 0 6-4 10-10 10z' fill='%23fff'/%3E%3Cpath d='M9 22l7-7' stroke='%23fff' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E">
 <title>LIGHTWISE FARM</title>
-<meta name="description" content="ระบบไฟปลูกพืชอัจฉริยะ 2 ชั้น ควบคุมหลอดไฟ 3 ดวง พัดลมแยกชั้น และปั๊มน้ำด้วย ESP32 พร้อมอ่านค่าจริงจากเครื่องผ่าน USB">
+<meta name="description" content="ระบบไฟปลูกพืชอัจฉริยะ 2 ชั้น สตริป RGBW เปลี่ยนสีเองตามระยะการเจริญเติบโต ควบคุมด้วย ESP32 อ่านค่าจริงผ่าน USB">
 
 <style>
 :root {
-  --bg:          #F5F7F3;
-  --surface:     #FFFFFF;
-  --surface-2:   #EDF1EA;
-  --ink:         #141C17;
-  --ink-2:       #4A5850;
-  --muted:       #7C8B82;
-  --line:        #D9E0D6;
-  --line-strong: #BAC6B8;
-
-  --brand:  #1B6B48;
-  --accent: #E2700A;
-  --glow:   #C0407F;   /* หลอดสเปกตรัม */
-  --lamp-y: #C79000;   /* หลอดเหลือง */
-  --lamp-g: #3E8F4F;   /* หลอดเขียว */
-
-  --ok:   #2E8B57;
-  --warn: #C9741A;
-  --cool: #3E7FA3;
-  --off:  #98A69E;
-
-  --font-display: "Leelawadee UI","Noto Sans Thai","IBM Plex Sans Thai",
-                  -apple-system,"Segoe UI",system-ui,"Helvetica Neue",sans-serif;
-  --font-body:    var(--font-display);
-  --font-mono:    "Cascadia Mono","JetBrains Mono","SF Mono",Consolas,
-                  "Noto Sans Thai Looped",ui-monospace,monospace;
-
-  --wrap: 1120px;
-  --r: 10px;
+  --bg:#F5F7F3; --surface:#FFFFFF; --surface-2:#EDF1EA;
+  --ink:#141C17; --ink-2:#4A5850; --muted:#7C8B82;
+  --line:#D9E0D6; --line-strong:#BAC6B8;
+  --brand:#1B6B48; --accent:#E2700A; --glow:#C0407F;
+  --ind-y:#C79000; --ind-g:#3E8F4F;
+  --ok:#2E8B57; --warn:#C9741A; --cool:#3E7FA3; --off:#98A69E;
+  --font-display:"Leelawadee UI","Noto Sans Thai","IBM Plex Sans Thai",-apple-system,"Segoe UI",system-ui,sans-serif;
+  --font-body:var(--font-display);
+  --font-mono:"Cascadia Mono","JetBrains Mono","SF Mono",Consolas,"Noto Sans Thai Looped",ui-monospace,monospace;
+  --wrap:1120px; --r:10px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:          #0E1310;
-    --surface:     #161D18;
-    --surface-2:   #1D2620;
-    --ink:         #E9EEE9;
-    --ink-2:       #AFBCB3;
-    --muted:       #87978D;
-    --line:        #26302A;
-    --line-strong: #37443B;
-
-    --brand:  #4FBF8B;
-    --accent: #F5913C;
-    --glow:   #E06BA6;
-    --lamp-y: #E8C24A;
-    --lamp-g: #5FBF72;
-
-    --ok:   #4FBF8B;
-    --warn: #E5A24F;
-    --cool: #6FAFD0;
-    --off:  #6E7C74;
+    --bg:#0E1310; --surface:#161D18; --surface-2:#1D2620;
+    --ink:#E9EEE9; --ink-2:#AFBCB3; --muted:#87978D;
+    --line:#26302A; --line-strong:#37443B;
+    --brand:#4FBF8B; --accent:#F5913C; --glow:#E06BA6;
+    --ind-y:#E8C24A; --ind-g:#5FBF72;
+    --ok:#4FBF8B; --warn:#E5A24F; --cool:#6FAFD0; --off:#6E7C74;
   }
 }
 :root[data-theme="dark"] {
-  --bg:          #0E1310;
-  --surface:     #161D18;
-  --surface-2:   #1D2620;
-  --ink:         #E9EEE9;
-  --ink-2:       #AFBCB3;
-  --muted:       #87978D;
-  --line:        #26302A;
-  --line-strong: #37443B;
-
-  --brand:  #4FBF8B;
-  --accent: #F5913C;
-  --glow:   #E06BA6;
-  --lamp-y: #E8C24A;
-  --lamp-g: #5FBF72;
-
-  --ok:   #4FBF8B;
-  --warn: #E5A24F;
-  --cool: #6FAFD0;
-  --off:  #6E7C74;
+  --bg:#0E1310; --surface:#161D18; --surface-2:#1D2620;
+  --ink:#E9EEE9; --ink-2:#AFBCB3; --muted:#87978D;
+  --line:#26302A; --line-strong:#37443B;
+  --brand:#4FBF8B; --accent:#F5913C; --glow:#E06BA6;
+  --ind-y:#E8C24A; --ind-g:#5FBF72;
+  --ok:#4FBF8B; --warn:#E5A24F; --cool:#6FAFD0; --off:#6E7C74;
 }
 
 * { box-sizing: border-box; }
-body {
-  margin: 0; background: var(--bg); color: var(--ink);
-  font-family: var(--font-body); font-size: 16px; line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
+body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body);
+       font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+h1,h2,h3,h4 { margin:0; text-wrap:balance; letter-spacing:-.02em; line-height:1.2; font-weight:700; }
+p { margin:0; }
+a { color:inherit; }
+:focus-visible { outline:2px solid var(--accent); outline-offset:3px; border-radius:4px; }
+.wrap { width:100%; max-width:var(--wrap); margin-inline:auto; padding-inline:24px; }
+.eyebrow { font-family:var(--font-mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+           color:var(--muted); display:flex; align-items:center; gap:12px; }
+.eyebrow::after { content:""; flex:1; height:1px; background:var(--line); }
+.num { font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+
+/* nav */
+.nav { position:sticky; top:0; z-index:50; background:color-mix(in srgb, var(--bg) 88%, transparent);
+       backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+.nav-in { display:flex; align-items:center; gap:20px; height:60px; }
+.mark { font-weight:800; letter-spacing:-.04em; font-size:17px; display:flex; gap:.3em; }
+.mark span { color:var(--accent); }
+.nav-links { margin-left:auto; display:flex; gap:4px; }
+.nav-links a { font-family:var(--font-mono); font-size:12px; letter-spacing:.04em; text-decoration:none;
+               color:var(--ink-2); padding:7px 11px; border-radius:6px; }
+.nav-links a:hover { color:var(--ink); background:var(--surface-2); }
+.burger { margin-left:auto; display:none; width:38px; height:34px; background:var(--surface);
+          border:1px solid var(--line); border-radius:8px; color:var(--ink); cursor:pointer;
+          align-items:center; justify-content:center; }
+
+section { padding-block:76px; border-top:1px solid var(--line); }
+section:first-of-type { border-top:0; }
+.head { display:flex; flex-direction:column; gap:10px; margin-bottom:36px; max-width:62ch; }
+.head h2 { font-size:clamp(26px,3.4vw,36px); }
+.head p { color:var(--ink-2); }
+
+/* hero */
+.hero { padding-block:60px 76px; }
+.hero-grid { display:grid; grid-template-columns:1fr 400px; gap:56px; align-items:center; }
+.hero h1 { font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-.035em; }
+.hero h1 em { font-style:normal; color:var(--brand); }
+.hero-sub { color:var(--ink-2); font-size:17px; margin-top:18px; max-width:52ch; }
+.hero-eyebrow { margin-bottom:20px; }
+.facts { display:flex; margin-top:34px; border:1px solid var(--line); border-radius:var(--r);
+         overflow:hidden; background:var(--surface); }
+.fact { flex:1; padding:14px 16px; border-left:1px solid var(--line); }
+.fact:first-child { border-left:0; }
+.fact dt { font-family:var(--font-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.fact dd { margin:3px 0 0; font-family:var(--font-mono); font-variant-numeric:tabular-nums;
+           font-size:19px; font-weight:600; color:var(--ink); }
+.fact dd small { font-size:12px; color:var(--muted); font-weight:400; }
+
+/* rack */
+.rack { width:100%; height:auto; display:block; }
+.rack .pipe { fill:var(--surface); stroke:var(--line-strong); stroke-width:1.5; }
+.rack .tray { fill:var(--surface-2); stroke:var(--line-strong); stroke-width:1.5; }
+.rack .leaf { fill:var(--brand); opacity:.85; }
+.rack .cone { fill:var(--glow); opacity:.07; }
+.rack .box  { fill:var(--surface); stroke:var(--line-strong); stroke-width:1.5; }
+.rack .chip { fill:var(--surface-2); stroke:var(--line-strong); stroke-width:1.2; }
+.rack .water{ fill:var(--cool); opacity:.28; }
+.rack .tube { fill:none; stroke:var(--cool); stroke-width:1.6; stroke-linejoin:round; }
+.rack .probe{ fill:none; stroke:var(--warn); stroke-width:1.8; stroke-linecap:round; }
+.rack .dim  { stroke:var(--muted); stroke-width:1; }
+.rack .dimtxt { fill:var(--muted); font-family:var(--font-mono); font-size:11px; }
+.rack .lbl  { fill:var(--ink-2); font-family:var(--font-mono); font-size:10px; }
+.rack .oledtxt { fill:var(--surface); font-family:var(--font-mono); font-size:8px; }
+.rack g[id^="part-"] { transition:opacity .2s ease; }
+.rack.has-focus g[id^="part-"] { opacity:.2; }
+.rack.has-focus g[id^="part-"].on { opacity:1; }
+.rack g.on .pipe, .rack g.on .box, .rack g.on .chip, .rack g.on .tray { stroke:var(--accent); stroke-width:2.2; }
+
+/* loop */
+.loop { display:flex; flex-wrap:wrap; align-items:stretch; gap:10px; }
+.loop-node { flex:1 1 150px; background:var(--surface); border:1px solid var(--line);
+             border-radius:var(--r); padding:14px 15px; display:flex; flex-direction:column; gap:4px; }
+.loop-node .k { font-family:var(--font-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.loop-node .t { font-weight:700; font-size:15px; }
+.loop-node .d { font-size:13px; color:var(--ink-2); line-height:1.5; }
+.loop-arrow { align-self:center; color:var(--line-strong); font-family:var(--font-mono); font-size:18px; }
+
+/* scope */
+.scope { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:40px; }
+.scope-col { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:20px 22px; }
+.scope-col h3 { font-size:15px; margin-bottom:12px; }
+.scope-col ul { margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px; }
+.scope-col li { font-size:14px; color:var(--ink-2); display:flex; gap:10px; line-height:1.5; }
+.scope-col li::before { font-family:var(--font-mono); font-size:13px; flex:none; }
+.scope-yes li::before { content:"✓"; color:var(--ok); }
+.scope-no li::before  { content:"—"; color:var(--muted); }
+.scope-no { background:var(--surface-2); }
+.scope-note { font-size:13px; color:var(--muted); margin-top:14px; line-height:1.55; }
+
+/* parts */
+.parts-grid { display:grid; grid-template-columns:1fr 380px; gap:40px; align-items:start; }
+.parts-list { display:flex; flex-direction:column; gap:6px; }
+.part { display:grid; grid-template-columns:26px 1fr; gap:14px; align-items:start; width:100%;
+        text-align:left; cursor:pointer; background:var(--surface); border:1px solid var(--line);
+        border-radius:var(--r); padding:12px 14px; color:inherit; font:inherit;
+        transition:border-color .15s ease, background .15s ease; }
+.part:hover { border-color:var(--line-strong); }
+.part[aria-pressed="true"] { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+.part .ico { width:26px; height:26px; display:grid; place-items:center; color:var(--brand); }
+.part[aria-pressed="true"] .ico { color:var(--accent); }
+.part .en { font-weight:700; font-size:14.5px; }
+.part .qty { font-family:var(--font-mono); font-size:11px; color:var(--muted); margin-left:6px; }
+.part .th { font-size:13px; color:var(--ink-2); }
+.part .de { font-size:12.5px; color:var(--muted); line-height:1.5; margin-top:3px; display:none; }
+.part[aria-pressed="true"] .de { display:block; }
+.parts-fig { position:sticky; top:84px; background:var(--surface); border:1px solid var(--line);
+             border-radius:var(--r); padding:18px; }
+.parts-fig figcaption { font-family:var(--font-mono); font-size:11px; color:var(--muted);
+                        text-align:center; margin-top:10px; letter-spacing:.04em; line-height:1.6; }
+
+/* linkbar */
+.linkbar { display:flex; gap:14px; align-items:center; flex-wrap:wrap; border-radius:var(--r);
+           padding:13px 16px; margin-bottom:20px;
+           background:color-mix(in srgb, var(--warn) 12%, var(--surface));
+           border:1px solid color-mix(in srgb, var(--warn) 40%, var(--line)); }
+.linkbar[data-state="live"] { background:color-mix(in srgb, var(--ok) 12%, var(--surface));
+                              border-color:color-mix(in srgb, var(--ok) 45%, var(--line)); }
+.linkbar[data-state="lost"] { background:color-mix(in srgb, var(--accent) 12%, var(--surface));
+                              border-color:color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.linkbar .tag { font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; color:var(--warn); flex:none; }
+.linkbar[data-state="live"] .tag { color:var(--ok); }
+.linkbar[data-state="lost"] .tag { color:var(--accent); }
+.linkbar .msg { font-size:13.5px; color:var(--ink-2); line-height:1.55; flex:1 1 260px; min-width:0; }
+.linkbar .msg strong { color:var(--ink); }
+.btn { font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; background:var(--ink);
+       color:var(--bg); border:1px solid var(--ink); border-radius:8px; padding:8px 16px; flex:none; }
+.btn:hover { opacity:.88; }
+.btn.ghost { background:transparent; color:var(--ink); border-color:var(--line-strong); font-weight:500; }
+
+/* tiles */
+.tiles  { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
+.tiles6 { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-top:12px; }
+.tile { background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+        padding:15px 16px; display:flex; flex-direction:column; gap:2px; }
+.tile .k { font-family:var(--font-mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+           color:var(--muted); display:flex; align-items:center; gap:6px; }
+.tile .k i { width:8px; height:8px; border-radius:2px; flex:none; }
+.tile .v { font-family:var(--font-mono); font-variant-numeric:tabular-nums; font-size:24px;
+           font-weight:600; letter-spacing:-.02em; }
+.tile .v small { font-size:12px; font-weight:400; color:var(--muted); margin-left:2px; }
+.tile .s { font-size:11.5px; color:var(--muted); }
+.tile.state { padding:13px 14px; }
+.tile.state .v { font-size:17px; padding-top:4px; }
+.pill { display:inline-flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:13px; letter-spacing:.04em; }
+.dot { width:9px; height:9px; border-radius:50%; background:var(--off); flex:none; }
+.pill.on .dot { background:var(--c,var(--accent)); box-shadow:0 0 0 4px color-mix(in srgb, var(--c,var(--accent)) 22%, transparent); }
+
+.panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:20px 22px; }
+.dash-grid { display:grid; grid-template-columns:1.6fr 1fr; gap:12px; margin-top:12px; }
+.panel h3 { font-size:14px; }
+.panel .sub { font-family:var(--font-mono); font-size:11px; color:var(--muted); letter-spacing:.06em; }
+.chart { width:100%; height:200px; display:block; margin-top:14px; }
+.chart .grid { stroke:var(--line); stroke-width:1; }
+.chart .axis { fill:var(--muted); font-family:var(--font-mono); font-size:10px; }
+.chart .band { fill:var(--glow); opacity:.06; }
+.chart .l-t1 { stroke:var(--accent); stroke-width:2; fill:none; stroke-linejoin:round; }
+.chart .l-t2 { stroke:var(--glow); stroke-width:2; fill:none; stroke-linejoin:round; }
+.chart .l-h  { stroke:var(--cool); stroke-width:1.6; fill:none; stroke-linejoin:round; stroke-dasharray:4 3; }
+.chart .pumpmark { fill:var(--cool); }
+.legend { display:flex; flex-wrap:wrap; gap:16px; margin-top:12px; font-family:var(--font-mono);
+          font-size:11px; color:var(--muted); }
+.legend i { display:inline-block; width:14px; height:2px; vertical-align:middle; margin-right:6px; }
+.legend b { display:inline-block; width:12px; height:9px; vertical-align:middle; margin-right:6px; border-radius:2px; }
+
+/* growth stage */
+.stagebox { display:flex; flex-direction:column; gap:14px; margin-top:14px; }
+.stage-now { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.swatch { width:52px; height:52px; border-radius:10px; border:1px solid var(--line-strong); flex:none;
+          box-shadow:inset 0 0 12px rgba(0,0,0,.12); }
+.stage-now .txt { min-width:0; }
+.stage-now .d { font-family:var(--font-mono); font-size:22px; font-weight:600; font-variant-numeric:tabular-nums; }
+.stage-now .n { font-size:14px; font-weight:700; }
+.stage-now .m { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+.stagebar { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
+.sseg { border:1px solid var(--line); border-radius:6px; padding:8px 9px; background:var(--surface-2);
+        display:flex; flex-direction:column; gap:2px; }
+.sseg[data-on="1"] { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.sseg .sn { font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; color:var(--muted); }
+.sseg[data-on="1"] .sn { color:var(--accent); }
+.sseg .sd { font-size:12px; font-weight:600; }
+.sseg .sr { font-family:var(--font-mono); font-size:10px; color:var(--muted); }
+
+/* plants */
+.plant { display:flex; flex-direction:column; gap:8px; padding:14px 0; border-top:1px solid var(--line); }
+.plant:first-of-type { border-top:0; padding-top:4px; }
+.plant .row { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.plant .nm { font-weight:700; font-size:14.5px; }
+.plant .tier { font-family:var(--font-mono); font-size:10.5px; color:var(--muted); letter-spacing:.08em; }
+.range { display:flex; flex-direction:column; gap:5px; }
+.range-hd { display:flex; justify-content:space-between; gap:8px; font-family:var(--font-mono);
+            font-size:11.5px; font-variant-numeric:tabular-nums; color:var(--ink-2); }
+.range-bar { position:relative; height:6px; border-radius:3px; background:var(--surface-2); overflow:hidden; }
+.range-ok { position:absolute; inset-block:0; background:color-mix(in srgb, var(--ok) 30%, transparent); }
+.range-pin { position:absolute; top:-3px; width:3px; height:12px; border-radius:2px; background:var(--ink);
+             transform:translateX(-1.5px); transition:left .5s ease; }
+.range-tag { font-family:var(--font-mono); font-size:11px; letter-spacing:.04em; text-align:right; }
+.range-tag.ok{color:var(--ok);} .range-tag.warn{color:var(--warn);}
+.range-tag.cool{color:var(--cool);} .range-tag.na{color:var(--muted);}
+
+/* control */
+.ctrl { margin-top:12px; }
+.ctrl-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.modechip { font-family:var(--font-mono); font-size:11px; letter-spacing:.12em; padding:4px 10px;
+            border-radius:999px; border:1px solid var(--line-strong); color:var(--muted); white-space:nowrap; }
+.modechip[data-m="MAN"] { color:var(--accent); border-color:var(--accent); }
+.modechip[data-m="AUTO"]{ color:var(--brand);  border-color:var(--brand); }
+.ctrl-note { font-size:13px; color:var(--ink-2); line-height:1.55; margin-top:14px;
+             background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:11px 14px; }
+.ctrl-note.warn { background:color-mix(in srgb, var(--warn) 12%, var(--surface));
+                  border-color:color-mix(in srgb, var(--warn) 40%, var(--line)); }
+.ctrl-note b { color:var(--ink); }
+.ctrl-sep { font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+            color:var(--muted); display:flex; align-items:center; gap:12px; margin-top:20px; }
+.ctrl-sep::after { content:""; flex:1; height:1px; background:var(--line); }
+.ctrl-grid { display:grid; gap:8px; margin-top:14px; grid-template-columns:repeat(5,1fr); }
+.cbtn { font:inherit; font-size:13px; font-weight:600; cursor:pointer; text-align:left;
+        background:var(--surface); color:var(--ink); border:1px solid var(--line-strong);
+        border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:5px;
+        transition:border-color .12s ease, background .12s ease; }
+.cbtn:hover:not(:disabled) { border-color:var(--accent); }
+.cbtn:disabled { opacity:.45; cursor:not-allowed; }
+.cbtn .st { font-family:var(--font-mono); font-size:11px; font-weight:500; color:var(--muted);
+            display:inline-flex; align-items:center; gap:6px; }
+.cbtn .st::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--off); flex:none; }
+.cbtn[data-on="1"] { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 9%, var(--surface)); }
+.cbtn[data-on="1"] .st { color:var(--accent); }
+.cbtn[data-on="1"] .st::before { background:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+.cbtn.ghost { font-weight:500; }
+.cbtn.ghost .st { display:none; }
+.cbtn.danger { color:var(--warn); border-color:color-mix(in srgb, var(--warn) 45%, var(--line)); }
+.ctrl-log { margin-top:14px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px;
+            padding:10px 13px; min-height:62px; font-family:var(--font-mono); font-size:11.5px;
+            line-height:1.7; color:var(--ink-2); white-space:pre-wrap; word-break:break-word;
+            max-height:150px; overflow-y:auto; }
+.ctrl-log:empty::before { content:"ข้อความจากเครื่องจะขึ้นที่นี่"; color:var(--muted); }
+
+/* table + team */
+.tablewrap { overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
+table { border-collapse:collapse; width:100%; min-width:520px; }
+th,td { text-align:left; padding:12px 18px; border-top:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+tr:first-child th, tr:first-child td { border-top:0; }
+th { width:34%; font-weight:600; color:var(--ink-2); }
+td { color:var(--ink); }
+td .num { font-size:14px; }
+.roles { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.role { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px 20px; }
+.role .k { font-family:var(--font-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.role h3 { font-size:15px; margin:4px 0 8px; }
+.role ul { margin:0; padding-left:18px; display:flex; flex-direction:column; gap:5px; }
+.role li { font-size:13px; color:var(--ink-2); line-height:1.5; }
+.plan { margin-top:12px; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.week { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:16px 18px; position:relative; }
+.week::before { content:""; position:absolute; inset-inline:-1px; top:-1px; height:3px;
+                border-radius:var(--r) var(--r) 0 0; background:var(--line-strong); }
+.week[data-now]::before { background:var(--accent); }
+.week .k { font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; color:var(--muted); }
+.week[data-now] .k { color:var(--accent); }
+.week h3 { font-size:14px; margin:5px 0 7px; }
+.week p { font-size:13px; color:var(--ink-2); line-height:1.5; }
+
+footer { border-top:1px solid var(--line); padding-block:40px 56px; }
+.foot { display:flex; flex-wrap:wrap; gap:20px; align-items:baseline; justify-content:space-between; }
+.foot p { font-size:13px; color:var(--muted); }
+.foot .mono { font-family:var(--font-mono); font-size:11.5px; letter-spacing:.06em; }
+
+@media (max-width:1020px){ .tiles{grid-template-columns:repeat(3,1fr);} .tiles6{grid-template-columns:repeat(3,1fr);} }
+@media (max-width:980px){
+  .hero-grid,.parts-grid{grid-template-columns:1fr; gap:36px;}
+  .parts-fig{position:static; order:-1;}
+  .dash-grid,.scope{grid-template-columns:1fr;}
+  .roles,.plan{grid-template-columns:repeat(2,1fr);}
+  .ctrl-grid{grid-template-columns:repeat(3,1fr);}
 }
-h1,h2,h3,h4 { margin: 0; text-wrap: balance; letter-spacing: -.02em; line-height: 1.2; font-weight: 700; }
-p { margin: 0; }
-a { color: inherit; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
-
-.wrap { width: 100%; max-width: var(--wrap); margin-inline: auto; padding-inline: 24px; }
-
-.eyebrow {
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em;
-  text-transform: uppercase; color: var(--muted);
-  display: flex; align-items: center; gap: 12px;
+@media (max-width:720px){
+  section{padding-block:56px;}
+  .nav-links{display:none; position:absolute; top:60px; left:0; right:0; flex-direction:column; gap:0;
+             background:var(--bg); border-bottom:1px solid var(--line); padding:8px 16px 14px;}
+  .nav-links.open{display:flex;}
+  .burger{display:flex;}
+  .facts{flex-direction:column;}
+  .fact{border-left:0; border-top:1px solid var(--line);}
+  .fact:first-child{border-top:0;}
+  .loop-arrow{display:none;}
+  .roles,.plan{grid-template-columns:1fr;}
+  .tiles,.tiles6,.ctrl-grid{grid-template-columns:repeat(2,1fr);}
+  .stagebar{grid-template-columns:repeat(2,1fr);}
 }
-.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-
-.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-
-/* ---------- nav ---------- */
-.nav {
-  position: sticky; top: 0; z-index: 50;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
-}
-.nav-in { display: flex; align-items: center; gap: 20px; height: 60px; }
-.mark { font-weight: 800; letter-spacing: -.04em; font-size: 17px; display: flex; gap: .3em; }
-.mark span { color: var(--accent); }
-.nav-links { margin-left: auto; display: flex; gap: 4px; }
-.nav-links a {
-  font-family: var(--font-mono); font-size: 12px; letter-spacing: .04em;
-  text-decoration: none; color: var(--ink-2); padding: 7px 11px; border-radius: 6px;
-}
-.nav-links a:hover { color: var(--ink); background: var(--surface-2); }
-.burger {
-  margin-left: auto; display: none; width: 38px; height: 34px;
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: 8px; color: var(--ink); cursor: pointer;
-  align-items: center; justify-content: center;
-}
-
-/* ---------- section ---------- */
-section { padding-block: 76px; border-top: 1px solid var(--line); }
-section:first-of-type { border-top: 0; }
-.head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; max-width: 62ch; }
-.head h2 { font-size: clamp(26px, 3.4vw, 36px); }
-.head p { color: var(--ink-2); }
-
-/* ---------- hero ---------- */
-.hero { padding-block: 60px 76px; }
-.hero-grid { display: grid; grid-template-columns: 1fr 400px; gap: 56px; align-items: center; }
-.hero h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 800; letter-spacing: -.035em; }
-.hero h1 em { font-style: normal; color: var(--brand); }
-.hero-sub { color: var(--ink-2); font-size: 17px; margin-top: 18px; max-width: 52ch; }
-.hero-eyebrow { margin-bottom: 20px; }
-
-.facts { display: flex; margin-top: 34px; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--surface); }
-.fact { flex: 1; padding: 14px 16px; border-left: 1px solid var(--line); }
-.fact:first-child { border-left: 0; }
-.fact dt { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-.fact dd { margin: 3px 0 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 19px; font-weight: 600; color: var(--ink); }
-.fact dd small { font-size: 12px; color: var(--muted); font-weight: 400; }
-
-/* ---------- rack drawing ---------- */
-.rack { width: 100%; height: auto; display: block; }
-.rack .pipe   { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; }
-.rack .tray   { fill: var(--surface-2); stroke: var(--line-strong); stroke-width: 1.5; }
-.rack .leaf   { fill: var(--brand); opacity: .85; }
-.rack .cone   { fill: var(--glow); opacity: .07; }
-.rack .box    { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; }
-.rack .chip   { fill: var(--surface-2); stroke: var(--line-strong); stroke-width: 1.2; }
-.rack .water  { fill: var(--cool); opacity: .28; }
-.rack .tube   { fill: none; stroke: var(--cool); stroke-width: 1.6; stroke-linejoin: round; }
-.rack .probe  { fill: none; stroke: var(--warn); stroke-width: 1.8; stroke-linecap: round; }
-.rack .dim    { stroke: var(--muted); stroke-width: 1; }
-.rack .dimtxt { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
-.rack .lbl    { fill: var(--ink-2); font-family: var(--font-mono); font-size: 10px; }
-.rack .oledtxt{ fill: var(--surface); font-family: var(--font-mono); font-size: 8px; }
-.rack g[id^="part-"] { transition: opacity .2s ease; }
-.rack.has-focus g[id^="part-"] { opacity: .2; }
-.rack.has-focus g[id^="part-"].on { opacity: 1; }
-.rack g.on .pipe, .rack g.on .box, .rack g.on .chip, .rack g.on .tray { stroke: var(--accent); stroke-width: 2.2; }
-
-/* ---------- loop diagram ---------- */
-.loop { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; }
-.loop-node {
-  flex: 1 1 150px; background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--r); padding: 14px 15px; display: flex; flex-direction: column; gap: 4px;
-}
-.loop-node .k { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-.loop-node .t { font-weight: 700; font-size: 15px; }
-.loop-node .d { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
-.loop-arrow { align-self: center; color: var(--line-strong); font-family: var(--font-mono); font-size: 18px; }
-
-/* ---------- scope ---------- */
-.scope { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
-.scope-col { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px 22px; }
-.scope-col h3 { font-size: 15px; margin-bottom: 12px; }
-.scope-col ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
-.scope-col li { font-size: 14px; color: var(--ink-2); display: flex; gap: 10px; line-height: 1.5; }
-.scope-col li::before { font-family: var(--font-mono); font-size: 13px; flex: none; }
-.scope-yes li::before { content: "✓"; color: var(--ok); }
-.scope-no  li::before { content: "—"; color: var(--muted); }
-.scope-no  { background: var(--surface-2); }
-.scope-note { font-size: 13px; color: var(--muted); margin-top: 14px; line-height: 1.55; }
-
-/* ---------- parts ---------- */
-.parts-grid { display: grid; grid-template-columns: 1fr 380px; gap: 40px; align-items: start; }
-.parts-list { display: flex; flex-direction: column; gap: 6px; }
-.part {
-  display: grid; grid-template-columns: 26px 1fr; gap: 14px; align-items: start;
-  width: 100%; text-align: left; cursor: pointer;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
-  padding: 12px 14px; color: inherit; font: inherit;
-  transition: border-color .15s ease, background .15s ease;
-}
-.part:hover { border-color: var(--line-strong); }
-.part[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
-.part .ico { width: 26px; height: 26px; display: grid; place-items: center; color: var(--brand); }
-.part[aria-pressed="true"] .ico { color: var(--accent); }
-.part .en { font-weight: 700; font-size: 14.5px; }
-.part .qty { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-left: 6px; }
-.part .th { font-size: 13px; color: var(--ink-2); }
-.part .de { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 3px; display: none; }
-.part[aria-pressed="true"] .de { display: block; }
-.parts-fig { position: sticky; top: 84px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; }
-.parts-fig figcaption { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; letter-spacing: .04em; line-height: 1.6; }
-
-/* ---------- แถบเชื่อมต่อ ---------- */
-.linkbar {
-  display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
-  border-radius: var(--r); padding: 13px 16px; margin-bottom: 20px;
-  background: color-mix(in srgb, var(--warn) 12%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--warn) 40%, var(--line));
-}
-.linkbar[data-state="live"] {
-  background: color-mix(in srgb, var(--ok) 12%, var(--surface));
-  border-color: color-mix(in srgb, var(--ok) 45%, var(--line));
-}
-.linkbar[data-state="lost"] {
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
-}
-.linkbar .tag {
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em;
-  color: var(--warn); flex: none;
-}
-.linkbar[data-state="live"] .tag { color: var(--ok); }
-.linkbar[data-state="lost"] .tag { color: var(--accent); }
-.linkbar .msg { font-size: 13.5px; color: var(--ink-2); line-height: 1.55; flex: 1 1 260px; min-width: 0; }
-.linkbar .msg strong { color: var(--ink); }
-.btn {
-  font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
-  background: var(--ink); color: var(--bg); border: 1px solid var(--ink);
-  border-radius: 8px; padding: 8px 16px; flex: none;
-}
-.btn:hover { opacity: .88; }
-.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); font-weight: 500; }
-
-/* ---------- dashboard ---------- */
-.tiles  { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.tiles6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 12px; }
-.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 15px 16px; display: flex; flex-direction: column; gap: 2px; }
-.tile .k { font-family: var(--font-mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-.tile .k i { width: 8px; height: 8px; border-radius: 2px; flex: none; }
-.tile .v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 600; letter-spacing: -.02em; }
-.tile .v small { font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 2px; }
-.tile .s { font-size: 12px; color: var(--muted); }
-.tile.state { padding: 13px 14px; }
-.tile.state .v { font-size: 17px; padding-top: 4px; }
-.pill { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 13px; letter-spacing: .04em; }
-.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--off); flex: none; }
-.pill.on .dot { background: var(--c, var(--accent)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c, var(--accent)) 22%, transparent); }
-
-/* ---------- แผงสั่งงาน ---------- */
-.ctrl { margin-top: 12px; }
-.ctrl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.modechip {
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em;
-  padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line-strong);
-  color: var(--muted); white-space: nowrap;
-}
-.modechip[data-m="MAN"]  { color: var(--accent); border-color: var(--accent); }
-.modechip[data-m="AUTO"] { color: var(--brand);  border-color: var(--brand); }
-
-.ctrl-note {
-  font-size: 13px; color: var(--ink-2); line-height: 1.55; margin-top: 14px;
-  background: var(--surface-2); border: 1px solid var(--line);
-  border-radius: 8px; padding: 11px 14px;
-}
-.ctrl-note.warn {
-  background: color-mix(in srgb, var(--warn) 12%, var(--surface));
-  border-color: color-mix(in srgb, var(--warn) 40%, var(--line));
-}
-.ctrl-note b { color: var(--ink); }
-
-.ctrl-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 14px; }
-.ctrl-grid.act { grid-template-columns: repeat(5, 1fr); }
-.cbtn {
-  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; text-align: left;
-  background: var(--surface); color: var(--ink);
-  border: 1px solid var(--line-strong); border-radius: 8px;
-  padding: 10px 12px; display: flex; flex-direction: column; gap: 5px;
-  transition: border-color .12s ease, background .12s ease;
-}
-.cbtn:hover:not(:disabled) { border-color: var(--accent); }
-.cbtn:disabled { opacity: .45; cursor: not-allowed; }
-.cbtn .st {
-  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
-  color: var(--muted); display: inline-flex; align-items: center; gap: 6px;
-}
-.cbtn .st::before {
-  content: ""; width: 8px; height: 8px; border-radius: 50%;
-  background: var(--off); flex: none;
-}
-.cbtn[data-on="1"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); }
-.cbtn[data-on="1"] .st { color: var(--accent); }
-.cbtn[data-on="1"] .st::before { background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
-.cbtn.ghost { font-weight: 500; }
-.cbtn.ghost .st { display: none; }
-.cbtn.danger { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); }
-
-.ctrl-log {
-  margin-top: 14px; background: var(--surface-2); border: 1px solid var(--line);
-  border-radius: 8px; padding: 10px 13px; min-height: 62px;
-  font-family: var(--font-mono); font-size: 11.5px; line-height: 1.7;
-  color: var(--ink-2); white-space: pre-wrap; word-break: break-word;
-  max-height: 150px; overflow-y: auto;
-}
-.ctrl-log:empty::before { content: "ข้อความจากเครื่องจะขึ้นที่นี่"; color: var(--muted); }
-
-.ctrl-sep {
-  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--muted);
-  display: flex; align-items: center; gap: 12px; margin-top: 20px;
-}
-.ctrl-sep::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-
-@media (max-width: 900px) { .ctrl-grid, .ctrl-grid.act { grid-template-columns: repeat(2, 1fr); } }
-
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px 22px; }
-.dash-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 12px; margin-top: 12px; }
-.panel h3 { font-size: 14px; }
-.panel .sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: .06em; }
-.chart { width: 100%; height: 200px; display: block; margin-top: 14px; }
-.chart .grid { stroke: var(--line); stroke-width: 1; }
-.chart .axis { fill: var(--muted); font-family: var(--font-mono); font-size: 10px; }
-.chart .band { fill: var(--glow); opacity: .06; }
-.chart .l-t1 { stroke: var(--accent); stroke-width: 2;   fill: none; stroke-linejoin: round; }
-.chart .l-t2 { stroke: var(--glow);   stroke-width: 2;   fill: none; stroke-linejoin: round; }
-.chart .l-h  { stroke: var(--cool);   stroke-width: 1.6; fill: none; stroke-linejoin: round; stroke-dasharray: 4 3; }
-.chart .pumpmark { fill: var(--cool); }
-.legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
-.legend i { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 6px; }
-.legend b { display: inline-block; width: 12px; height: 9px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
-
-.plant { display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-top: 1px solid var(--line); }
-.plant:first-of-type { border-top: 0; padding-top: 4px; }
-.plant .row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.plant .nm { font-weight: 700; font-size: 14.5px; }
-.plant .tier { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); letter-spacing: .08em; }
-.range { display: flex; flex-direction: column; gap: 5px; }
-.range-hd { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-mono); font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--ink-2); }
-.range-bar { position: relative; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
-.range-ok { position: absolute; inset-block: 0; background: color-mix(in srgb, var(--ok) 30%, transparent); }
-.range-pin { position: absolute; top: -3px; width: 3px; height: 12px; border-radius: 2px; background: var(--ink); transform: translateX(-1.5px); transition: left .5s ease; }
-.range-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; text-align: right; }
-.range-tag.ok   { color: var(--ok); }
-.range-tag.warn { color: var(--warn); }
-.range-tag.cool { color: var(--cool); }
-.range-tag.na   { color: var(--muted); }
-
-/* ---------- table ---------- */
-.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
-table { border-collapse: collapse; width: 100%; min-width: 520px; }
-th, td { text-align: left; padding: 12px 18px; border-top: 1px solid var(--line); font-size: 14.5px; vertical-align: top; }
-tr:first-child th, tr:first-child td { border-top: 0; }
-th { width: 34%; font-weight: 600; color: var(--ink-2); }
-td { color: var(--ink); }
-td .num { font-size: 14px; }
-
-/* ---------- team ---------- */
-.roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.role { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 20px; }
-.role .k { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-.role h3 { font-size: 15px; margin: 4px 0 8px; }
-.role ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
-.role li { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
-
-.plan { margin-top: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.week { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px; position: relative; }
-.week::before { content: ""; position: absolute; inset-inline: -1px; top: -1px; height: 3px; border-radius: var(--r) var(--r) 0 0; background: var(--line-strong); }
-.week[data-now]::before { background: var(--accent); }
-.week .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--muted); }
-.week[data-now] .k { color: var(--accent); }
-.week h3 { font-size: 14px; margin: 5px 0 7px; }
-.week p { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
-
-footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
-.foot { display: flex; flex-wrap: wrap; gap: 20px; align-items: baseline; justify-content: space-between; }
-.foot p { font-size: 13px; color: var(--muted); }
-.foot .mono { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .06em; }
-
-@media (max-width: 1020px) { .tiles6 { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 980px) {
-  .hero-grid, .parts-grid { grid-template-columns: 1fr; gap: 36px; }
-  .parts-fig { position: static; order: -1; }
-  .tiles { grid-template-columns: repeat(2, 1fr); }
-  .dash-grid, .scope { grid-template-columns: 1fr; }
-  .roles, .plan { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 720px) {
-  section { padding-block: 56px; }
-  .nav-links {
-    display: none; position: absolute; top: 60px; left: 0; right: 0;
-    flex-direction: column; gap: 0; background: var(--bg);
-    border-bottom: 1px solid var(--line); padding: 8px 16px 14px;
-  }
-  .nav-links.open { display: flex; }
-  .burger { display: flex; }
-  .facts { flex-direction: column; }
-  .fact { border-left: 0; border-top: 1px solid var(--line); }
-  .fact:first-child { border-top: 0; }
-  .loop-arrow { display: none; }
-  .roles, .plan { grid-template-columns: 1fr; }
-  .tiles6 { grid-template-columns: repeat(2, 1fr); }
-}
-@media (prefers-reduced-motion: reduce) {
-  * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
-}
+@media (prefers-reduced-motion: reduce){ *{transition-duration:.01ms !important; animation-duration:.01ms !important;} }
 </style>
 </head>
 <body>
-<!-- ==================== NAV ==================== -->
 <nav class="nav">
   <div class="wrap nav-in">
     <div class="mark">LIGHTWISE<span>FARM</span></div>
@@ -441,21 +352,20 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
   </div>
 </nav>
 
-<!-- ==================== HERO ==================== -->
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
       <div class="eyebrow hero-eyebrow">โครงงาน · ต้นแบบโรงเรือนปลูกพืชในร่ม</div>
-      <h1>ระบบไฟปลูกพืชอัจฉริยะ<br><em>ปรับสีแสงได้</em></h1>
+      <h1>ไฟปลูกพืชที่<br><em>เปลี่ยนสีตามอายุพืช</em></h1>
       <p class="hero-sub">
-        โรงเรือนปลูกพืช 2 ชั้นจากท่อ PVC วัดอุณหภูมิแยกทีละชั้น
-        ให้ ESP32 คุมหลอดไฟ 3 ดวง พัดลมแยกชั้น และปั๊มน้ำเอง
-        เปลี่ยนสูตรสีแสงได้เพื่อทดลองว่าสีไหนทำให้พืชโตต่างกัน
+        โรงเรือน 2 ชั้นจากท่อ PVC วัดอุณหภูมิและคุมไฟกับพัดลมแยกทีละชั้น
+        มีสตริป RGBW ที่ปรับอัตราส่วนแสงแดง–น้ำเงินให้เองตามระยะการเจริญเติบโต
+        ตั้งแต่เพาะกล้าจนถึงก่อนเก็บเกี่ยว
       </p>
       <dl class="facts">
         <div class="fact"><dt>ขนาดโครงสร้าง</dt><dd>70×45×120 <small>ซม.</small></dd></div>
         <div class="fact"><dt>ชั้นปลูก</dt><dd>2 <small>ชั้น</small></dd></div>
-        <div class="fact"><dt>หลอดไฟที่คุมได้</dt><dd>3 <small>สี</small></dd></div>
+        <div class="fact"><dt>ระยะที่ปรับสี</dt><dd>4 <small>ระยะ</small></dd></div>
         <div class="fact"><dt>รีเลย์</dt><dd>6 <small>ช่อง</small></dd></div>
       </dl>
     </div>
@@ -463,38 +373,32 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
   </div>
 </section>
 
-<!-- ==================== HOW ==================== -->
 <section id="how">
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">การทำงานของระบบ</div>
       <h2>วัด → ตัดสินใจ → สั่งงาน → แสดงผล</h2>
-      <p>ระบบทำงานเป็นวงรอบเดียวซ้ำไปทุก 2 วินาที ไม่ต่อเน็ตก็ทำงานได้ครบ</p>
+      <p>วงรอบเดียวซ้ำทุก 2 วินาที ไม่ต่อเน็ตก็ทำงานได้ครบ</p>
     </div>
-
     <div class="loop">
       <div class="loop-node">
-        <span class="k">01 · Sense</span>
-        <span class="t">อ่านค่าเซนเซอร์</span>
-        <span class="d">DS18B20 กันน้ำวัดอุณหภูมิแยกชั้นบน–ชั้นล่าง · DHT22 วัดอุณหภูมิและความชื้นอากาศรวม</span>
+        <span class="k">01 · Sense</span><span class="t">อ่านค่าเซนเซอร์</span>
+        <span class="d">DS18B20 วัดอุณหภูมิแยกชั้น · DHT22 วัดอากาศรวม · BH1750 วัดความเข้มแสง</span>
       </div>
       <div class="loop-arrow">→</div>
       <div class="loop-node">
-        <span class="k">02 · Decide</span>
-        <span class="t">เทียบกับเกณฑ์</span>
-        <span class="d">ESP32 เทียบกับช่วงเวลาให้แสง สูตรสีที่เลือกไว้ เกณฑ์อุณหภูมิพัดลม และตารางรดน้ำ</span>
+        <span class="k">02 · Decide</span><span class="t">เทียบกับเกณฑ์</span>
+        <span class="d">ช่วงเวลาให้แสง · เกณฑ์อุณหภูมิพัดลมของแต่ละชั้น · ตารางรดน้ำ · อายุพืชกี่วัน</span>
       </div>
       <div class="loop-arrow">→</div>
       <div class="loop-node">
-        <span class="k">03 · Act</span>
-        <span class="t">สั่งรีเลย์ 6 ช่อง</span>
-        <span class="d">หลอดสเปกตรัม · หลอดเหลือง · หลอดเขียว · พัดลมชั้นบน · พัดลมชั้นล่าง · ปั๊มน้ำ</span>
+        <span class="k">03 · Act</span><span class="t">สั่งรีเลย์ 6 ช่อง + สตริป</span>
+        <span class="d">ไฟปลูก 2 ชั้น · พัดลม 2 ชั้น · ปั๊มน้ำ · ไฟแสดงสถานะ และปรับสีสตริปตามระยะโต</span>
       </div>
       <div class="loop-arrow">→</div>
       <div class="loop-node">
-        <span class="k">04 · Report</span>
-        <span class="t">แสดงผลและบันทึก</span>
-        <span class="d">จอ OLED แสดงค่าหน้าเครื่อง · ส่งค่าขึ้นเว็บผ่านสาย USB · บันทึก CSV ทุกนาที</span>
+        <span class="k">04 · Report</span><span class="t">แสดงผลและบันทึก</span>
+        <span class="d">จอ OLED หน้าเครื่อง · ส่งค่าขึ้นเว็บผ่านสาย USB · บันทึก CSV ทุกนาที</span>
       </div>
     </div>
 
@@ -502,14 +406,15 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
       <div class="scope-col scope-yes">
         <h3>สิ่งที่ต้นแบบนี้ทำได้จริง</h3>
         <ul>
+          <li><strong>สตริป RGBW เปลี่ยนสีเองตามอายุพืช</strong> 4 ระยะ ตั้งแต่เพาะกล้าถึงก่อนเก็บ</li>
           <li>วัดอุณหภูมิ<strong>แยกทีละชั้น</strong> ด้วย DS18B20 กันน้ำ 2 ตัว</li>
-          <li>วัดอุณหภูมิและความชื้นอากาศรวมด้วย DHT22</li>
-          <li>เปิด–ปิดหลอดสเปกตรัม เหลือง เขียว แยกกันได้ทีละดวง</li>
-          <li><strong>เปลี่ยนสูตรสีแสงได้ 6 แบบ</strong> เพื่อทดลองเปรียบเทียบ</li>
-          <li>เปิด–ปิดพัดลม<strong>แยกชั้น</strong> ตามอุณหภูมิของชั้นนั้นเอง</li>
+          <li>เปิด–ปิดไฟปลูก<strong>แยกชั้น</strong> ตามช่วงเวลาให้แสง 16 ชั่วโมงต่อวัน</li>
+          <li>พัดลม<strong>แยกชั้น</strong> เปิดตามอุณหภูมิของชั้นนั้นเอง</li>
           <li>รดน้ำอัตโนมัติตามตารางเวลา วันละ 3 ครั้ง</li>
-          <li>สวิตช์หน้ากล่องเลือก AUTO / OFF / MANUAL</li>
-          <li>ส่งค่าจริงขึ้นเว็บผ่านสาย USB ดูได้ทันที</li>
+          <li>ไฟแสดงสถานะหน้าตู้ 2 ดวง ทำงานตามโหลดให้เอง</li>
+          <li>สวิตช์หน้าตู้เลือก AUTO / OFF / MANUAL และสั่งโหมดจากเว็บได้</li>
+          <li>นับอายุพืชเก็บในหน่วยความจำถาวร ไฟดับไม่หาย</li>
+          <li>ส่งค่าจริงขึ้นเว็บผ่านสาย USB และสั่งงานกลับได้</li>
         </ul>
       </div>
       <div class="scope-col scope-no">
@@ -523,7 +428,7 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
           <li>การหรี่ความสว่างหลอด 220V — รีเลย์ทำได้แค่เปิดกับปิด</li>
         </ul>
         <p class="scope-note">
-          รายการนี้เขียนไว้ให้ชัดเจน เพราะเป็นขอบเขตที่ตัดออกตั้งแต่ตอนวางแผน
+          เขียนไว้ให้ชัดเจน เพราะเป็นขอบเขตที่ตัดออกตั้งแต่ตอนวางแผน
           เพื่อให้ต้นแบบเสร็จและทดสอบได้จริงภายในเวลาที่มี
         </p>
       </div>
@@ -531,7 +436,6 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
   </div>
 </section>
 
-<!-- ==================== PARTS ==================== -->
 <section id="parts">
   <div class="wrap">
     <div class="head">
@@ -548,13 +452,12 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
   </div>
 </section>
 
-<!-- ==================== DASHBOARD ==================== -->
 <section id="dashboard">
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">แดชบอร์ด</div>
-      <h2>ค่าที่อ่านได้และสถานะรีเลย์ทั้ง 6 ช่อง</h2>
-      <p>กดเชื่อมต่อสาย USB แล้วหน้านี้จะรับค่าจริงจากเครื่องทุก 2 วินาที</p>
+      <h2>ค่าที่อ่านได้ ระยะการเจริญเติบโต และสถานะรีเลย์</h2>
+      <p>กดเชื่อมต่อสาย USB แล้วหน้านี้จะรับค่าจริงจากเครื่องทุก 2 วินาที และสั่งงานกลับได้</p>
     </div>
 
     <div class="linkbar" id="linkbar" data-state="demo">
@@ -578,51 +481,94 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
         <span class="s">DS18B20 · กวางตุ้ง</span>
       </div>
       <div class="tile">
-        <span class="k">Temp · อากาศรวม</span>
+        <span class="k">Temp · อากาศ</span>
         <span class="v num" id="vTa">—<small>°C</small></span>
         <span class="s">DHT22</span>
       </div>
       <div class="tile">
         <span class="k"><i style="background:var(--cool)"></i>Humidity</span>
         <span class="v num" id="vRh">—<small>%</small></span>
-        <span class="s">DHT22 · ความชื้นอากาศ</span>
+        <span class="s">DHT22</span>
+      </div>
+      <div class="tile">
+        <span class="k">Light</span>
+        <span class="v num" id="vLux">—<small>lx</small></span>
+        <span class="s">BH1750</span>
       </div>
     </div>
 
     <div class="tiles6">
       <div class="tile state">
-        <span class="k">หลอดสเปกตรัม</span>
-        <span class="v"><span class="pill" id="pLs" style="--c:var(--glow)"><span class="dot"></span><span class="tx">—</span></span></span>
-        <span class="s">รีเลย์ 1·2</span>
+        <span class="k">ไฟปลูก · บน</span>
+        <span class="v"><span class="pill" id="pSt" style="--c:var(--glow)"><span class="dot"></span><span class="tx">—</span></span></span>
+        <span class="s">GPIO 25</span>
       </div>
       <div class="tile state">
-        <span class="k">หลอดเหลือง</span>
-        <span class="v"><span class="pill" id="pLy" style="--c:var(--lamp-y)"><span class="dot"></span><span class="tx">—</span></span></span>
-        <span class="s">รีเลย์ 3·1</span>
-      </div>
-      <div class="tile state">
-        <span class="k">หลอดเขียว</span>
-        <span class="v"><span class="pill" id="pLg" style="--c:var(--lamp-g)"><span class="dot"></span><span class="tx">—</span></span></span>
-        <span class="s">รีเลย์ 3·2</span>
+        <span class="k">ไฟปลูก · ล่าง</span>
+        <span class="v"><span class="pill" id="pSb" style="--c:var(--glow)"><span class="dot"></span><span class="tx">—</span></span></span>
+        <span class="s">GPIO 26</span>
       </div>
       <div class="tile state">
         <span class="k">พัดลม · บน</span>
         <span class="v"><span class="pill" id="pF1" style="--c:var(--cool)"><span class="dot"></span><span class="tx">—</span></span></span>
-        <span class="s">รีเลย์ 2·1</span>
+        <span class="s">GPIO 27</span>
       </div>
       <div class="tile state">
         <span class="k">พัดลม · ล่าง</span>
         <span class="v"><span class="pill" id="pF2" style="--c:var(--cool)"><span class="dot"></span><span class="tx">—</span></span></span>
-        <span class="s">รีเลย์ 2·2</span>
+        <span class="s">GPIO 18</span>
       </div>
       <div class="tile state">
         <span class="k">ปั๊มน้ำ</span>
-        <span class="v"><span class="pill" id="pPu" style="--c:var(--cool)"><span class="dot"></span><span class="tx">—</span></span></span>
-        <span class="s">รีเลย์ 1·1 · 20 วินาที</span>
+        <span class="v"><span class="pill" id="pPu" style="--c:var(--ind-g)"><span class="dot"></span><span class="tx">—</span></span></span>
+        <span class="s">GPIO 17 · ไฟเขียวตาม</span>
+      </div>
+      <div class="tile state">
+        <span class="k">ไฟเหลือง</span>
+        <span class="v"><span class="pill" id="pLy" style="--c:var(--ind-y)"><span class="dot"></span><span class="tx">—</span></span></span>
+        <span class="s">GPIO 16 · ตามไฟปลูก</span>
       </div>
     </div>
 
-    <!-- ---------- แผงสั่งงานเครื่อง ---------- -->
+    <div class="dash-grid">
+      <div class="panel">
+        <h3>ประวัติอุณหภูมิสองชั้นและความชื้น</h3>
+        <div class="sub">24 ชั่วโมงล่าสุด · <span id="clkLabel">เวลาจำลอง</span> <span id="simClock">--:--</span> · โหมด <span id="modeLabel">—</span></div>
+        <svg class="chart" id="chart" viewBox="0 0 640 200" preserveAspectRatio="none" role="img"
+             aria-label="กราฟอุณหภูมิสองชั้นและความชื้นย้อนหลัง 24 ชั่วโมง พร้อมช่วงที่ไฟปลูกเปิดและจุดที่รดน้ำ"></svg>
+        <div class="legend">
+          <span><i style="background:var(--accent)"></i>อุณหภูมิชั้นบน</span>
+          <span><i style="background:var(--glow)"></i>อุณหภูมิชั้นล่าง</span>
+          <span><i style="background:var(--cool)"></i>ความชื้น (%)</span>
+          <span><b style="background:color-mix(in srgb, var(--glow) 22%, transparent)"></b>ช่วงที่ไฟปลูกเปิด</span>
+          <span style="color:var(--cool)">▲ รดน้ำ</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>ระยะการเจริญเติบโต</h3>
+        <div class="sub">GROWTH STAGE · สตริป RGBW ปรับสีตามระยะให้เอง</div>
+        <div class="stagebox">
+          <div class="stage-now">
+            <div class="swatch" id="stSwatch"></div>
+            <div class="txt">
+              <div class="d">วันที่ <span id="stDay">—</span></div>
+              <div class="n" id="stName">—</div>
+              <div class="m" id="stMix">—</div>
+            </div>
+          </div>
+          <div class="stagebar" id="stageBar"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3>ช่วงอุณหภูมิที่เหมาะสมของพืช</h3>
+      <div class="sub">TARGET RANGE · เทียบกับอุณหภูมิของชั้นนั้น</div>
+      <div id="plants"></div>
+    </div>
+
+    <!-- ---------- แผงสั่งงาน ---------- -->
     <div class="panel ctrl">
       <div class="ctrl-head">
         <div>
@@ -635,22 +581,22 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
       <p class="ctrl-note" id="ctrlNote">เชื่อมต่อสาย USB ก่อนจึงจะสั่งงานได้</p>
 
       <div class="ctrl-grid" id="ctrlToggles">
-        <button class="cbtn" data-cmd="1" data-key="ls" disabled>หลอดสเปกตรัม<span class="st">ปิด</span></button>
-        <button class="cbtn" data-cmd="2" data-key="ly" disabled>หลอดเหลือง<span class="st">ปิด</span></button>
-        <button class="cbtn" data-cmd="3" data-key="lg" disabled>หลอดเขียว<span class="st">ปิด</span></button>
-        <button class="cbtn" data-cmd="4" data-key="f1" disabled>พัดลมบน<span class="st">ปิด</span></button>
-        <button class="cbtn" data-cmd="5" data-key="f2" disabled>พัดลมล่าง<span class="st">ปิด</span></button>
+        <button class="cbtn" data-cmd="1" data-key="st" disabled>ไฟปลูก ชั้นบน<span class="st">ปิด</span></button>
+        <button class="cbtn" data-cmd="7" data-key="sb" disabled>ไฟปลูก ชั้นล่าง<span class="st">ปิด</span></button>
+        <button class="cbtn" data-cmd="4" data-key="f1" disabled>พัดลม ชั้นบน<span class="st">ปิด</span></button>
+        <button class="cbtn" data-cmd="5" data-key="f2" disabled>พัดลม ชั้นล่าง<span class="st">ปิด</span></button>
+        <button class="cbtn ghost" data-cmd="p" disabled>เดินปั๊ม 5 วินาที</button>
       </div>
 
-      <div class="ctrl-grid act" id="ctrlActions">
-        <button class="cbtn ghost" data-cmd="p" disabled>เดินปั๊ม 5 วินาที</button>
-        <button class="cbtn ghost" data-cmd="r" disabled>สูตรแสงถัดไป</button>
+      <div class="ctrl-grid" id="ctrlActions">
         <button class="cbtn ghost" data-cmd="6" disabled>สีสตริปถัดไป</button>
         <button class="cbtn ghost" data-cmd="w" disabled>ขาว 15 วิ (ถ่ายรูป)</button>
+        <button class="cbtn ghost" data-cmd="]" disabled>อายุพืช +1 วัน</button>
+        <button class="cbtn ghost" data-cmd="[" disabled>อายุพืช −1 วัน</button>
         <button class="cbtn danger" data-cmd="x" disabled>ปิดทุกอย่าง</button>
       </div>
 
-      <div class="ctrl-sep">เลือกโหมดจากเว็บ — ใช้ตอนที่สวิตช์หน้ากล่องยังไม่ได้เดินสาย</div>
+      <div class="ctrl-sep">เลือกโหมดจากเว็บ — ใช้ตอนที่สวิตช์หน้าตู้ยังไม่ได้เดินสาย</div>
       <div class="ctrl-grid" id="ctrlModes" style="grid-template-columns:repeat(4,1fr)">
         <button class="cbtn" data-cmd="F" data-mode="OFF"  disabled>OFF<span class="st">ดับทุกอย่าง</span></button>
         <button class="cbtn" data-cmd="A" data-mode="AUTO" disabled>AUTO<span class="st">ทำงานเอง</span></button>
@@ -661,33 +607,9 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
 
       <div class="ctrl-log" id="ctrlLog"></div>
     </div>
-
-    <div class="dash-grid">
-      <div class="panel">
-        <h3>ประวัติอุณหภูมิสองชั้นและความชื้น</h3>
-        <div class="sub">24 ชั่วโมงล่าสุด · <span id="clkLabel">เวลาจำลอง</span> <span id="simClock">--:--</span>
-          · โหมด <span id="modeLabel">—</span> · สูตร <span id="recipeLabel">—</span></div>
-        <svg class="chart" id="chart" viewBox="0 0 640 200" preserveAspectRatio="none" role="img"
-             aria-label="กราฟอุณหภูมิสองชั้นและความชื้นย้อนหลัง 24 ชั่วโมง พร้อมช่วงเวลาที่ไฟเปิดและจุดที่รดน้ำ"></svg>
-        <div class="legend">
-          <span><i style="background:var(--accent)"></i>อุณหภูมิชั้นบน</span>
-          <span><i style="background:var(--glow)"></i>อุณหภูมิชั้นล่าง</span>
-          <span><i style="background:var(--cool)"></i>ความชื้น (%)</span>
-          <span><b style="background:color-mix(in srgb, var(--glow) 22%, transparent)"></b>ช่วงที่ไฟเปิด</span>
-          <span style="color:var(--cool)">▲ รดน้ำ</span>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h3>ช่วงที่เหมาะสมของพืช</h3>
-        <div class="sub">TARGET RANGE · เทียบกับอุณหภูมิของชั้นนั้น</div>
-        <div id="plants"></div>
-      </div>
-    </div>
   </div>
 </section>
 
-<!-- ==================== SPEC ==================== -->
 <section id="spec">
   <div class="wrap">
     <div class="head">
@@ -698,19 +620,19 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
       <table>
         <tbody>
           <tr><th>ขนาดโครงสร้าง</th><td><span class="num">กว้าง 70 × ลึก 45 × สูง 120</span> ซม.</td></tr>
-          <tr><th>โครงหลัก</th><td>ท่อ PVC สีขาว ขนาด 1 นิ้ว · คลุมพลาสติกโรงเรือน UV</td></tr>
+          <tr><th>โครงหลัก</th><td>ท่อ PVC สีขาว 1 นิ้ว · คลุมพลาสติกโรงเรือน UV</td></tr>
           <tr><th>ชั้นปลูก</th><td>2 ชั้น — สลัด (ชั้นบน) และกวางตุ้ง (ชั้นล่าง)</td></tr>
-          <tr><th>หลอดไฟ</th><td>หลอดสเปกตรัม (จ่ายทั้งสองชั้น) · หลอดเหลือง · หลอดเขียว</td></tr>
-          <tr><th>สูตรสีแสง</th><td>6 แบบ — SPEC · SPEC+Y · SPEC+G · ALL · YEL · GRN</td></tr>
+          <tr><th>ไฟปลูกพืช</th><td>หลอดสเปกตรัม 220V แยกชั้น — ชั้นบน GPIO 25 · ชั้นล่าง GPIO 26</td></tr>
           <tr><th>ช่วงเวลาให้แสง</th><td><span class="num">06:00–22:00</span> น. (16 ชั่วโมงต่อวัน)</td></tr>
+          <tr><th>ไฟเสริมปรับสี</th><td>สตริป SK6812 RGBW <span class="num">30</span> ดวง (GPIO 13) เปลี่ยนสีเองตาม 4 ระยะ</td></tr>
           <tr><th>วัดอุณหภูมิ</th><td>DS18B20 กันน้ำ × 2 — ชั้นละ 1 ตัว (GPIO 32 / 33)</td></tr>
-          <tr><th>วัดอากาศ</th><td>DHT22 × 1 — อุณหภูมิและความชื้นรวม (GPIO 4)</td></tr>
+          <tr><th>วัดอากาศ</th><td>DHT22 (GPIO 4) และ BH1750 วัดความเข้มแสง (I2C)</td></tr>
           <tr><th>ระบายอากาศ</th><td>พัดลม DC <span class="num">12V</span> × 2 แยกชั้น · เปิดที่ <span class="num">29</span>°C ปิดที่ <span class="num">27</span>°C</td></tr>
-          <tr><th>ระบบน้ำ</th><td>ปั๊มน้ำ × 1 ตั้งเวลา <span class="num">07:00 / 12:00 / 17:00</span> ครั้งละ <span class="num">20</span> วินาที</td></tr>
-          <tr><th>ไฟเสริมปรับสี</th><td>สตริป SK6812 RGBW <span class="num">30</span> ดวง (GPIO 13) · 4 สูตรสี</td></tr>
+          <tr><th>ระบบน้ำ</th><td>ปั๊มน้ำ (GPIO 17) ตั้งเวลา <span class="num">07:00 / 12:00 / 17:00</span> ครั้งละ <span class="num">20</span> วินาที</td></tr>
+          <tr><th>ไฟแสดงสถานะ</th><td>เหลือง (GPIO 16) ตามไฟปลูก · เขียว ต่อขนานกับปั๊ม</td></tr>
           <tr><th>ระบบควบคุม</th><td>ESP32-D0WD-V3 + โมดูลรีเลย์ 2 ช่อง × 3 (รวม 6 ช่อง)</td></tr>
-          <tr><th>สวิตช์หน้ากล่อง</th><td>LA38-11X2 เลือก AUTO / OFF / MANUAL (GPIO 34 / 35)</td></tr>
-          <tr><th>การแสดงผล</th><td>จอ OLED I2C <span class="num">128×64</span> · เว็บผ่าน USB · CSV ทาง Serial</td></tr>
+          <tr><th>สวิตช์หน้าตู้</th><td>LA38-11X2 เลือก AUTO / OFF / MANUAL (GPIO 34 / 35)</td></tr>
+          <tr><th>การแสดงผล</th><td>จอ OLED SH1106 <span class="num">128×64</span> · เว็บผ่าน USB · CSV ทาง Serial</td></tr>
           <tr><th>แหล่งจ่ายไฟ</th><td>Switching <span class="num">12V 5A</span> + LM2596 ลดเป็น 5V</td></tr>
           <tr><th>ความปลอดภัย</th><td>ฟิวส์ 2A · สวิตช์ตัดตอน · กล่องกันน้ำ · แยกโมดูลรีเลย์ 220V ออกจาก 12V</td></tr>
         </tbody>
@@ -719,65 +641,34 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
   </div>
 </section>
 
-<!-- ==================== TEAM ==================== -->
 <section id="team">
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">ทีมงานและแผนงาน</div>
       <h2>แบ่งงาน 3 ฝ่าย ทำงาน 4 สัปดาห์</h2>
     </div>
-
     <div class="roles">
-      <div class="role">
-        <span class="k">ฝ่ายที่ 1</span>
-        <h3>โครงสร้างและโรงเรือน</h3>
-        <ul>
-          <li>ตัดและประกอบโครง PVC 2 ชั้น</li>
-          <li>ติดพลาสติกคลุมและจัดวางถาดปลูก</li>
-          <li>ยึดหลอดไฟ 3 ดวง พัดลม และเดินท่อน้ำ</li>
-        </ul>
-      </div>
-      <div class="role">
-        <span class="k">ฝ่ายที่ 2</span>
-        <h3>ไฟฟ้าและควบคุม ESP32</h3>
-        <ul>
-          <li>ต่อรีเลย์ 6 ช่อง แยกฝั่ง 220V กับ 12V</li>
-          <li>ต่อ DS18B20 × 2, DHT22, OLED และสวิตช์เลือกโหมด</li>
-          <li>อัปโหลดและปรับเกณฑ์ควบคุมในเฟิร์มแวร์</li>
-        </ul>
-      </div>
-      <div class="role">
-        <span class="k">ฝ่ายที่ 3</span>
-        <h3>เว็บและข้อมูลทดลอง</h3>
-        <ul>
-          <li>ต่อเว็บกับเครื่องผ่าน USB แล้วเก็บค่าจริง</li>
-          <li>ทำกราฟเทียบอุณหภูมิสองชั้นและเทียบสูตรสีแสง</li>
-          <li>ถ่ายภาพ วิดีโอ และเตรียมสื่อนำเสนอ</li>
-        </ul>
-      </div>
+      <div class="role"><span class="k">ฝ่ายที่ 1</span><h3>โครงสร้างและโรงเรือน</h3>
+        <ul><li>ตัดและประกอบโครง PVC 2 ชั้น</li><li>ติดพลาสติกคลุมและจัดวางถาดปลูก</li>
+            <li>ยึดไฟปลูก พัดลม และเดินท่อน้ำ</li></ul></div>
+      <div class="role"><span class="k">ฝ่ายที่ 2</span><h3>ไฟฟ้าและควบคุม ESP32</h3>
+        <ul><li>ต่อรีเลย์ 6 ช่อง แยกฝั่ง 220V กับ 12V</li>
+            <li>ต่อ DS18B20 × 2, DHT22, BH1750, OLED, สวิตช์</li>
+            <li>อัปโหลดและปรับเกณฑ์ควบคุมในเฟิร์มแวร์</li></ul></div>
+      <div class="role"><span class="k">ฝ่ายที่ 3</span><h3>เว็บและข้อมูลทดลอง</h3>
+        <ul><li>ต่อเว็บกับเครื่องผ่าน USB แล้วเก็บค่าจริง</li>
+            <li>ทำกราฟเทียบอุณหภูมิสองชั้นและเทียบระยะการเจริญเติบโต</li>
+            <li>ถ่ายภาพ วิดีโอ และเตรียมสื่อนำเสนอ</li></ul></div>
     </div>
-
     <div class="plan">
-      <div class="week">
-        <span class="k">สัปดาห์ที่ 6</span>
-        <h3>ประกอบโครงและทดสอบแยกส่วน</h3>
-        <p>โครง PVC ตั้งได้ · ESP32 อ่านเซนเซอร์ได้ · OLED แสดงผลได้</p>
-      </div>
-      <div class="week" data-now>
-        <span class="k">สัปดาห์ที่ 7</span>
-        <h3>ติดตั้งไฟ พัดลม ปั๊ม และกล่องควบคุม</h3>
-        <p>รีเลย์ทั้ง 6 ช่องสั่งงานได้ · เว็บรับค่าจริงจากเครื่องได้</p>
-      </div>
-      <div class="week">
-        <span class="k">สัปดาห์ที่ 8</span>
-        <h3>รวมระบบอัตโนมัติและเก็บข้อมูล</h3>
-        <p>เดินโหมด AUTO ต่อเนื่อง · เก็บ CSV · เริ่มทดลองเปลี่ยนสูตรสีแสง</p>
-      </div>
-      <div class="week">
-        <span class="k">สัปดาห์ที่ 9</span>
-        <h3>ทดสอบจริงและเตรียมนำเสนอ</h3>
-        <p>ชิ้นงานพร้อมโชว์ · กราฟเทียบสองชั้นและเทียบสูตรสี · วิดีโอและโปสเตอร์</p>
-      </div>
+      <div class="week"><span class="k">สัปดาห์ที่ 6</span><h3>ประกอบโครงและทดสอบแยกส่วน</h3>
+        <p>โครง PVC ตั้งได้ · ESP32 อ่านเซนเซอร์ได้ · OLED แสดงผลได้</p></div>
+      <div class="week" data-now><span class="k">สัปดาห์ที่ 7</span><h3>ติดตั้งครบและเชื่อมเว็บ</h3>
+        <p>รีเลย์ทั้ง 6 ช่องสั่งงานได้ · เว็บรับค่าจริงและสั่งงานกลับได้</p></div>
+      <div class="week"><span class="k">สัปดาห์ที่ 8</span><h3>รวมระบบอัตโนมัติและเก็บข้อมูล</h3>
+        <p>เดินโหมด AUTO ต่อเนื่อง · เก็บ CSV · เริ่มบันทึกอายุพืชและระยะที่เปลี่ยนสี</p></div>
+      <div class="week"><span class="k">สัปดาห์ที่ 9</span><h3>ทดสอบจริงและเตรียมนำเสนอ</h3>
+        <p>ชิ้นงานพร้อมโชว์ · กราฟเทียบสองชั้น · วิดีโอและโปสเตอร์</p></div>
     </div>
   </div>
 </section>
@@ -786,7 +677,7 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
   <div class="wrap foot">
     <div>
       <div class="mark" style="font-size:15px">LIGHTWISE<span>FARM</span></div>
-      <p style="margin-top:6px">ระบบไฟปลูกพืชอัจฉริยะ 2 ชั้น ปรับสีแสงได้ ควบคุมด้วย ESP32</p>
+      <p style="margin-top:6px">ไฟปลูกพืชที่เปลี่ยนสีตามอายุพืช ควบคุมด้วย ESP32</p>
     </div>
     <p class="mono">SENSOR CONTROL FOR SMARTER FARMING · โครงงานนักศึกษา · ประเทศไทย · 2026</p>
   </div>
@@ -797,78 +688,82 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
   "use strict";
 
   /* ---------- เกณฑ์ควบคุม ต้องตรงกับ lightwise_farm.ino ---------- */
-  const CTRL = {
-    lightHours: [6, 22],          // LIGHT_ON_HOUR / LIGHT_OFF_HOUR
-    fanOnC: 29, fanOffC: 27,      // FAN_ON_C / FAN_OFF_C
-    pumpTimes: [7, 12, 17],       // PUMP_TIMES
-    pumpRunSec: 20
-  };
+  const CTRL = { lightHours:[6,22], fanOnC:29, fanOffC:27, pumpTimes:[7,12,17] };
+
+  /* ระยะการเจริญเติบโต -- ตัวเลขชุดเดียวกับ STAGES[] ในเฟิร์มแวร์ */
+  const STAGES = [
+    { name:"SEEDLING", th:"เพาะกล้า",  from:0,  to:7,  r:170, g:45, b:120, w:90,  rb:"1.6 : 1",
+      why:"น้ำเงินเยอะ กันต้นกล้ายืดหาแสง" },
+    { name:"EARLY",    th:"ต้นอ่อน",   from:8,  to:21, r:220, g:45, b:100, w:100, rb:"2.4 : 1",
+      why:"เริ่มเพิ่มแดงให้ใบขยาย" },
+    { name:"VEG",      th:"โตเต็มที่", from:22, to:35, r:255, g:45, b:82,  w:110, rb:"3.5 : 1",
+      why:"ช่วงเร่งมวลใบเต็มที่" },
+    { name:"FINISH",   th:"ก่อนเก็บ",  from:36, to:null, r:210, g:40, b:130, w:80, rb:"1.8 : 1",
+      why:"เพิ่มน้ำเงินคืน ใบหนา สีเข้ม ลดไนเตรต" },
+  ];
+  const stageOf = d => { let k=0; STAGES.forEach((s,i)=>{ if(d>=s.from) k=i; }); return k; };
 
   const PLANTS = [
-    { key: "t1", nm: "สลัด",     en: "Salad",    tier: "ชั้นบน · TOP",     t: [18, 24] },
-    { key: "t2", nm: "กวางตุ้ง",  en: "Pak Choi", tier: "ชั้นล่าง · BOTTOM", t: [18, 25] }
+    { key:"t1", nm:"สลัด",    en:"Salad",    tier:"ชั้นบน · TOP",     t:[18,24] },
+    { key:"t2", nm:"กวางตุ้ง", en:"Pak Choi", tier:"ชั้นล่าง · BOTTOM", t:[18,25] },
   ];
 
   const PARTS = [
-    { id: "part-lampspec", en: "Spectrum Grow Lamp", qty: "× 1 ช่อง", th: "หลอดไฟสเปกตรัม",
-      de: "แหล่งแสงหลัก จ่ายทั้งชั้นบนและชั้นล่างจากรีเลย์ช่องเดียว เปิดตามช่วงเวลา 06:00–22:00 น. หรี่ความสว่างไม่ได้",
-      ico: "M8 2a5 5 0 0 0-3 9v2h6v-2a5 5 0 0 0-3-9zM6 15h4M7 17h2" },
-    { id: "part-lampyel", en: "Yellow Lamp", qty: "× 1 ช่อง", th: "หลอดเหลือง",
-      de: "ราว 585 nm พืชสังเคราะห์แสงได้น้อยกว่าแดงกับน้ำเงินมาก ใช้เป็นตัวแปรทดลอง ควรเปิดคู่กับหลอดสเปกตรัม",
-      ico: "M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M12.5 3.5l-1.4 1.4M4.9 11.1l-1.4 1.4M8 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6z" },
-    { id: "part-lampgrn", en: "Green Lamp", qty: "× 1 ช่อง", th: "หลอดเขียว",
-      de: "ราว 525 nm ใบพืชสะท้อนออกเกือบหมด จึงใช้ทดลองเปรียบเทียบ ไม่ใช่แหล่งแสงหลัก",
-      ico: "M13 3c0 6-4 10-10 10 0-6 4-10 10-10zM3 13c3-3 5-5 8-7" },
-    { id: "part-ds", en: "DS18B20 Probe", qty: "× 2", th: "เซนเซอร์อุณหภูมิกันน้ำ แยกทีละชั้น",
-      de: "หัววัดกันน้ำชั้นละ 1 ตัว ต่อคนละขา GPIO (32 / 33) จึงไม่ต้องจำ address ว่าตัวไหนคือชั้นไหน ต้องมี R pull-up 4.7k ทั้งสองเส้น",
-      ico: "M8 1v8M8 9a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM10 3h2.5M10 5.5h2.5M10 8h2.5" },
-    { id: "part-dht", en: "DHT22 Sensor", qty: "× 1", th: "เซนเซอร์อุณหภูมิและความชื้นอากาศ",
-      de: "วัดอากาศรวมของทั้งตู้ ใช้เป็นค่าสำรองให้พัดลมเมื่อ DS18B20 ของชั้นนั้นอ่านไม่ได้",
-      ico: "M6 2.5a1.5 1.5 0 0 1 3 0v6a3 3 0 1 1-3 0v-6zM7.5 8V4" },
-    { id: "part-esp32", en: "ESP32 Controller", qty: "× 1", th: "ไมโครคอนโทรลเลอร์ ESP32",
-      de: "ESP32-D0WD-V3 ไม่มี PSRAM จึงใช้ GPIO 16/17 ได้ อ่านเซนเซอร์ ตัดสินใจ สั่งรีเลย์ และส่ง JSON ขึ้นเว็บผ่าน USB",
-      ico: "M4 4h8v8H4zM6 1v3M10 1v3M6 12v3M10 12v3M1 6h3M1 10h3M12 6h3M12 10h3" },
-    { id: "part-relay", en: "Relay Module 2ch", qty: "× 3", th: "โมดูลรีเลย์ 2 ช่อง สามตัว",
-      de: "รวม 6 ช่อง จัดกลุ่มตามชนิดไฟ — ฝั่ง 220V สามช่องสำหรับหลอดไฟ ฝั่ง 12V สามช่องสำหรับพัดลมกับปั๊ม ห้ามผสมบนแผ่นเดียวกัน",
-      ico: "M2 5h5l-2 3h4l-2 3h5M2 11h3M11 5h3" },
-    { id: "part-fan", en: "Ventilation Fan", qty: "× 2", th: "พัดลมระบายอากาศ แยกชั้น",
-      de: "พัดลม DC 12V ชั้นละ 1 ตัว แต่ละตัวดูอุณหภูมิของชั้นตัวเอง เปิดที่ 29°C ปิดที่ 27°C ช่องว่าง 2°C กันรีเลย์กระตุก",
-      ico: "M8 8a3 3 0 0 0 3-3 3 3 0 0 0-6 0M8 8a3 3 0 0 1 1.5 5.6A3 3 0 0 1 5.4 9.5M8 8a3 3 0 0 1-4.5 2.6A3 3 0 0 1 5 5.4" },
-    { id: "part-pump", en: "Water Pump", qty: "× 1", th: "ปั๊มน้ำ",
-      de: "รดตามตารางเวลา 07:00 12:00 17:00 ครั้งละ 20 วินาที มีปั๊มตัวเดียวไม่มีวาล์วแยกท่อ จึงรดทั้งสองชั้นพร้อมกัน",
-      ico: "M8 2s4 4.6 4 7.2A4 4 0 0 1 4 9.2C4 6.6 8 2 8 2z" },
-    { id: "part-sw", en: "Mode Selector", qty: "× 1", th: "สวิตช์เลือกโหมดหน้ากล่อง",
-      de: "LA38-11X2 สามตำแหน่ง AUTO / OFF / MANUAL ต่อเข้า GPIO 34 และ 35 สองขานี้ไม่มีตัวต้านทานในตัว ต้องต่อ R pull-down 10k ลง GND เอง",
-      ico: "M8 2v5M8 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M3 12a6 6 0 0 1 10 0" },
-    { id: "part-strip", en: "SK6812 RGBW Strip", qty: "× 30 ดวง", th: "สตริปไฟเสริมปรับสี",
-      de: "ปรับอัตราส่วนแดง:น้ำเงินได้ละเอียด 4 สูตร แต่ให้แสงแค่ราว 20–30 µmol/m²/s จึงเป็นไฟเสริมปรับสเปกตรัม ไม่ใช่แหล่งแสงหลัก",
-      ico: "M2 8h12M4 6v4M7 6v4M10 6v4M13 6v4" },
-    { id: "part-oled", en: "OLED Display", qty: "× 1", th: "จอแสดงผล OLED",
-      de: "จอ I2C 128×64 แสดงอุณหภูมิสองชั้น ความชื้น สูตรแสง และสถานะรีเลย์ ดูได้ทันทีโดยไม่ต้องต่อคอม",
-      ico: "M2 3h12v10H2zM4 6h5M4 8h7M4 10h4" },
-    { id: "part-frame", en: "PVC Frame + UV Cover", qty: "× 1", th: "โครง PVC และพลาสติกคลุม",
-      de: "ท่อ PVC 1 นิ้ว ขนาด 70 × 45 × 120 ซม. 2 ชั้นปลูก คลุมด้วยพลาสติกโรงเรือน UV",
-      ico: "M2 2h12v12H2zM2 8h12M5 2v12M11 2v12" }
+    { id:"part-spectop", en:"Spectrum Lamp · Top", qty:"GPIO 25", th:"หลอดสเปกตรัม ชั้นบน",
+      de:"แหล่งแสงหลักของชั้นบน ไฟบ้าน 220V ผ่านรีเลย์ เปิดตามช่วงเวลา 06:00–22:00 น. หรี่ความสว่างไม่ได้",
+      ico:"M8 2a5 5 0 0 0-3 9v2h6v-2a5 5 0 0 0-3-9zM6 15h4M7 17h2" },
+    { id:"part-specbot", en:"Spectrum Lamp · Bottom", qty:"GPIO 26", th:"หลอดสเปกตรัม ชั้นล่าง",
+      de:"แหล่งแสงหลักของชั้นล่าง แยกรีเลย์คนละช่องกับชั้นบน จึงสั่งเปิด–ปิดทีละชั้นได้",
+      ico:"M8 2a5 5 0 0 0-3 9v2h6v-2a5 5 0 0 0-3-9zM6 15h4M7 17h2" },
+    { id:"part-strip", en:"SK6812 RGBW Strip", qty:"30 ดวง · GPIO 13", th:"สตริปไฟเสริม เปลี่ยนสีตามอายุพืช",
+      de:"ปรับอัตราส่วนแดง:น้ำเงินให้เองตาม 4 ระยะการเจริญเติบโต แต่ให้แสงเพียง 20–30 µmol/m²/s จึงเป็นไฟเสริมปรับสเปกตรัม ไม่ใช่แหล่งแสงหลัก",
+      ico:"M2 8h12M4 6v4M7 6v4M10 6v4M13 6v4" },
+    { id:"part-ds", en:"DS18B20 Probe", qty:"× 2 · GPIO 32/33", th:"เซนเซอร์อุณหภูมิกันน้ำ แยกทีละชั้น",
+      de:"หัววัดกันน้ำชั้นละ 1 ตัว ต่อคนละขา GPIO จึงไม่ต้องจำ address ว่าตัวไหนคือชั้นไหน ต้องมี R pull-up 4.7k ทั้งสองเส้น",
+      ico:"M8 1v8M8 9a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM10 3h2.5M10 5.5h2.5M10 8h2.5" },
+    { id:"part-dht", en:"DHT22 + BH1750", qty:"GPIO 4 · I2C", th:"เซนเซอร์อากาศและความเข้มแสง",
+      de:"DHT22 วัดอุณหภูมิและความชื้นอากาศรวม ใช้เป็นค่าสำรองให้พัดลมเมื่อ DS18B20 เสีย · BH1750 วัดความเข้มแสงเป็น lux",
+      ico:"M6 2.5a1.5 1.5 0 0 1 3 0v6a3 3 0 1 1-3 0v-6zM7.5 8V4" },
+    { id:"part-fan", en:"Ventilation Fan", qty:"× 2 · GPIO 27/18", th:"พัดลมระบายอากาศ แยกชั้น",
+      de:"พัดลม DC 12V ชั้นละ 1 ตัว แต่ละตัวดูอุณหภูมิของชั้นตัวเอง เปิดที่ 29°C ปิดที่ 27°C ช่องว่าง 2°C กันรีเลย์กระตุก",
+      ico:"M8 8a3 3 0 0 0 3-3 3 3 0 0 0-6 0M8 8a3 3 0 0 1 1.5 5.6A3 3 0 0 1 5.4 9.5M8 8a3 3 0 0 1-4.5 2.6A3 3 0 0 1 5 5.4" },
+    { id:"part-pump", en:"Water Pump", qty:"GPIO 17", th:"ปั๊มน้ำ",
+      de:"รดตามตารางเวลา 07:00 12:00 17:00 ครั้งละ 20 วินาที · ไฟแสดงสถานะสีเขียวต่อขนานอยู่ช่องเดียวกัน จึงติดตามปั๊มเสมอ · ปั๊มตัวเดียวไม่มีวาล์วแยก จึงรดทั้งสองชั้นพร้อมกัน",
+      ico:"M8 2s4 4.6 4 7.2A4 4 0 0 1 4 9.2C4 6.6 8 2 8 2z" },
+    { id:"part-ind", en:"Status Indicators", qty:"× 2", th:"ไฟแสดงสถานะหน้าตู้",
+      de:"เหลือง (GPIO 16) โค้ดสั่งตามไฟปลูกให้เอง · เขียว ต่อขนานกับปั๊ม ไม่ต้องสั่งแยก จึงบอกได้ว่ากำลังรดน้ำ",
+      ico:"M8 2v5M8 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M3 12a6 6 0 0 1 10 0" },
+    { id:"part-esp32", en:"ESP32 Controller", qty:"× 1", th:"ไมโครคอนโทรลเลอร์ ESP32",
+      de:"ESP32-D0WD-V3 ไม่มี PSRAM จึงใช้ GPIO 16/17 ได้ อ่านเซนเซอร์ ตัดสินใจ สั่งรีเลย์ และส่ง JSON ขึ้นเว็บผ่าน USB",
+      ico:"M4 4h8v8H4zM6 1v3M10 1v3M6 12v3M10 12v3M1 6h3M1 10h3M12 6h3M12 10h3" },
+    { id:"part-relay", en:"Relay Module 2ch", qty:"× 3", th:"โมดูลรีเลย์ 2 ช่อง สามตัว",
+      de:"รวม 6 ช่อง จัดกลุ่มตามชนิดไฟ — ฝั่ง 220V สำหรับไฟปลูก 2 ชั้น ฝั่ง 12V สำหรับพัดลม ปั๊ม และไฟแสดงสถานะ ห้ามผสมบนแผ่นเดียวกัน",
+      ico:"M2 5h5l-2 3h4l-2 3h5M2 11h3M11 5h3" },
+    { id:"part-sw", en:"Mode Selector", qty:"GPIO 34/35", th:"สวิตช์เลือกโหมดหน้าตู้",
+      de:"LA38-11X2 สามตำแหน่ง AUTO / OFF / MANUAL สองขานี้ไม่มีตัวต้านทานในตัว ต้องต่อ R pull-down 10k ลง GND เอง ไม่งั้นจะรับสัญญาณ 50 Hz จากสายไฟรอบตัว",
+      ico:"M8 2v5M8 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M3 12a6 6 0 0 1 10 0" },
+    { id:"part-oled", en:"OLED SH1106", qty:"1.3 นิ้ว", th:"จอแสดงผล OLED",
+      de:"จอ I2C 128×64 ชิป SH1106 ไม่ใช่ SSD1306 ถ้าใช้ไลบรารีผิดจอจะมืดสนิททั้งที่ I2C ตอบปกติ",
+      ico:"M2 3h12v10H2zM4 6h5M4 8h7M4 10h4" },
+    { id:"part-frame", en:"PVC Frame + UV Cover", qty:"× 1", th:"โครง PVC และพลาสติกคลุม",
+      de:"ท่อ PVC 1 นิ้ว ขนาด 70 × 45 × 120 ซม. 2 ชั้นปลูก คลุมด้วยพลาสติกโรงเรือน UV",
+      ico:"M2 2h12v12H2zM2 8h12M5 2v12M11 2v12" },
   ];
 
-  /* =========================================================
-     แบบโครงสร้าง — วาดเป็น SVG ในไฟล์ ไม่ใช้รูปภาพภายนอก
-     สเกล 4 px = 1 ซม.  กรอบ 80..360 = 70 ซม.,  40..520 = 120 ซม.
-     ========================================================= */
+  /* ---------- แบบโครงสร้าง SVG ---------- */
   function rackSVG() {
     return `
 <svg class="rack" viewBox="0 0 480 600" role="img"
-     aria-label="แบบด้านหน้าของโครงปลูกพืช 2 ชั้น ขนาด 70 x 45 x 120 เซนติเมตร แสดงหลอดไฟสามสี หัววัดอุณหภูมิสองจุด พัดลม กล่องควบคุม และถังน้ำกับปั๊ม">
+     aria-label="แบบด้านหน้าโครงปลูกพืช 2 ชั้น 70x45x120 ซม. แสดงหลอดสเปกตรัมแยกชั้น สตริป RGBW หัววัดอุณหภูมิ 2 จุด พัดลม 2 ตัว กล่องควบคุมพร้อมไฟแสดงสถานะ และถังน้ำกับปั๊ม">
   <defs>
     <linearGradient id="coneGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="var(--glow)" stop-opacity=".24"/>
+      <stop offset="0%" stop-color="var(--glow)" stop-opacity=".24"/>
       <stop offset="100%" stop-color="var(--glow)" stop-opacity="0"/>
     </linearGradient>
   </defs>
-
   <g>
     <line class="dim" x1="52" y1="40" x2="52" y2="520"/>
-    <line class="dim" x1="47" y1="40"  x2="57" y2="40"/>
+    <line class="dim" x1="47" y1="40" x2="57" y2="40"/>
     <line class="dim" x1="47" y1="520" x2="57" y2="520"/>
     <text class="dimtxt" x="46" y="285" text-anchor="middle" transform="rotate(-90 46 285)">120 cm</text>
     <line class="dim" x1="80" y1="556" x2="360" y2="556"/>
@@ -876,42 +771,34 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
     <line class="dim" x1="360" y1="551" x2="360" y2="561"/>
     <text class="dimtxt" x="220" y="574" text-anchor="middle">70 cm  ·  ลึก 45 cm</text>
   </g>
-
   <g class="cones">
-    <path class="cone" fill="url(#coneGrad)" d="M115 92 L325 92 L345 240 L95 240 Z"/>
+    <path class="cone" fill="url(#coneGrad)" d="M115 84 L325 84 L345 240 L95 240 Z"/>
     <path class="cone" fill="url(#coneGrad)" d="M115 314 L325 314 L345 462 L95 462 Z"/>
   </g>
-
   <g id="part-frame">
-    <rect class="pipe" x="80"  y="40"  width="10" height="480" rx="4"/>
-    <rect class="pipe" x="350" y="40"  width="10" height="480" rx="4"/>
-    <rect class="pipe" x="80"  y="40"  width="280" height="10" rx="4"/>
-    <rect class="pipe" x="80"  y="280" width="280" height="10" rx="4"/>
-    <rect class="pipe" x="80"  y="510" width="280" height="10" rx="4"/>
-    <rect class="pipe" x="86"  y="520" width="12" height="14" rx="3"/>
+    <rect class="pipe" x="80" y="40" width="10" height="480" rx="4"/>
+    <rect class="pipe" x="350" y="40" width="10" height="480" rx="4"/>
+    <rect class="pipe" x="80" y="40" width="280" height="10" rx="4"/>
+    <rect class="pipe" x="80" y="280" width="280" height="10" rx="4"/>
+    <rect class="pipe" x="80" y="510" width="280" height="10" rx="4"/>
+    <rect class="pipe" x="86" y="520" width="12" height="14" rx="3"/>
     <rect class="pipe" x="342" y="520" width="12" height="14" rx="3"/>
     <rect x="90" y="50" width="260" height="460" fill="currentColor" opacity=".03"/>
     <line x1="90" y1="50" x2="90" y2="510" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"/>
     <line x1="350" y1="50" x2="350" y2="510" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"/>
   </g>
-
-  <!-- หลอดสเปกตรัม จ่ายทั้งสองชั้น -->
-  <g id="part-lampspec">
-    <rect x="115" y="60" width="210" height="8" rx="4" fill="var(--glow)"/>
-    <rect x="115" y="304" width="210" height="8" rx="4" fill="var(--glow)"/>
-    <text class="lbl" x="330" y="58" text-anchor="end">สเปกตรัม</text>
-    <text class="lbl" x="330" y="301" text-anchor="end">สเปกตรัม</text>
+  <g id="part-spectop">
+    <rect x="115" y="62" width="210" height="9" rx="4.5" fill="var(--glow)"/>
+    <text class="lbl" x="330" y="60" text-anchor="end">สเปกตรัม บน · 25</text>
   </g>
-  <!-- หลอดเหลือง / เขียว อยู่ชั้นบน ใช้เป็นตัวแปรทดลอง -->
-  <g id="part-lampyel">
-    <rect x="130" y="74" width="180" height="6" rx="3" fill="var(--lamp-y)"/>
-    <text class="lbl" x="316" y="79">เหลือง</text>
+  <g id="part-specbot">
+    <rect x="115" y="304" width="210" height="9" rx="4.5" fill="var(--glow)"/>
+    <text class="lbl" x="330" y="301" text-anchor="end">สเปกตรัม ล่าง · 26</text>
   </g>
-  <g id="part-lampgrn">
-    <rect x="130" y="85" width="180" height="6" rx="3" fill="var(--lamp-g)"/>
-    <text class="lbl" x="316" y="90">เขียว</text>
+  <g id="part-strip">
+    <rect x="130" y="78" width="180" height="5" rx="2.5" fill="var(--glow)" opacity=".55"/>
+    <text class="lbl" x="316" y="82">RGBW · 13</text>
   </g>
-
   <g id="part-tray">
     <rect class="tray" x="104" y="240" width="232" height="40" rx="3"/>
     <rect class="tray" x="104" y="470" width="232" height="40" rx="3"/>
@@ -922,72 +809,58 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
     <text class="lbl" x="110" y="256">สลัด · ชั้นบน</text>
     <text class="lbl" x="110" y="486">กวางตุ้ง · ชั้นล่าง</text>
   </g>
-
-  <!-- DS18B20 กันน้ำ ชั้นละตัว -->
   <g id="part-ds">
-    <path class="probe" d="M304 244v26"/>
-    <circle cx="304" cy="273" r="3.6" fill="var(--warn)"/>
+    <path class="probe" d="M304 244v26"/><circle cx="304" cy="273" r="3.6" fill="var(--warn)"/>
     <text class="lbl" x="311" y="252">T1</text>
-    <path class="probe" d="M304 474v26"/>
-    <circle cx="304" cy="503" r="3.6" fill="var(--warn)"/>
+    <path class="probe" d="M304 474v26"/><circle cx="304" cy="503" r="3.6" fill="var(--warn)"/>
     <text class="lbl" x="311" y="482">T2</text>
   </g>
-
   <g id="part-dht">
     <rect class="chip" x="322" y="180" width="18" height="26" rx="3"/>
     <line x1="326" y1="186" x2="336" y2="186" stroke="var(--line-strong)" stroke-width="1.2"/>
     <line x1="326" y1="192" x2="336" y2="192" stroke="var(--line-strong)" stroke-width="1.2"/>
     <line x1="326" y1="198" x2="336" y2="198" stroke="var(--line-strong)" stroke-width="1.2"/>
-    <line class="dim" x1="322" y1="193" x2="286" y2="193"/>
-    <text class="lbl" x="282" y="196" text-anchor="end">DHT22</text>
+    <line class="dim" x1="322" y1="193" x2="278" y2="193"/>
+    <text class="lbl" x="274" y="196" text-anchor="end">DHT22 + BH1750</text>
   </g>
-
-  <!-- พัดลมแยกชั้น -->
   <g id="part-fan">
     <rect class="box" x="316" y="108" width="32" height="32" rx="4"/>
     <circle cx="332" cy="124" r="11" fill="none" stroke="var(--line-strong)" stroke-width="1.2"/>
-    <path d="M332 124a4.6 4.6 0 0 0 4.6-4.6 4.6 4.6 0 0 0-9.2 0M332 124a4.6 4.6 0 0 1 2.3 8.6A4.6 4.6 0 0 1 330.3 126M332 124a4.6 4.6 0 0 1-6.9 4A4.6 4.6 0 0 1 327.4 121"
-          fill="var(--cool)" opacity=".55"/>
+    <path d="M332 124a4.6 4.6 0 0 0 4.6-4.6 4.6 4.6 0 0 0-9.2 0M332 124a4.6 4.6 0 0 1 2.3 8.6A4.6 4.6 0 0 1 330.3 126M332 124a4.6 4.6 0 0 1-6.9 4A4.6 4.6 0 0 1 327.4 121" fill="var(--cool)" opacity=".55"/>
     <rect class="box" x="316" y="338" width="32" height="32" rx="4"/>
     <circle cx="332" cy="354" r="11" fill="none" stroke="var(--line-strong)" stroke-width="1.2"/>
-    <path d="M332 354a4.6 4.6 0 0 0 4.6-4.6 4.6 4.6 0 0 0-9.2 0M332 354a4.6 4.6 0 0 1 2.3 8.6A4.6 4.6 0 0 1 330.3 356M332 354a4.6 4.6 0 0 1-6.9 4A4.6 4.6 0 0 1 327.4 351"
-          fill="var(--cool)" opacity=".55"/>
+    <path d="M332 354a4.6 4.6 0 0 0 4.6-4.6 4.6 4.6 0 0 0-9.2 0M332 354a4.6 4.6 0 0 1 2.3 8.6A4.6 4.6 0 0 1 330.3 356M332 354a4.6 4.6 0 0 1-6.9 4A4.6 4.6 0 0 1 327.4 351" fill="var(--cool)" opacity=".55"/>
   </g>
-
   <g id="part-ctrlbox">
-    <rect class="box" x="384" y="150" width="82" height="248" rx="6"/>
+    <rect class="box" x="384" y="150" width="82" height="252" rx="6"/>
     <text class="lbl" x="425" y="166" text-anchor="middle">กล่องควบคุม</text>
   </g>
   <g id="part-esp32">
-    <rect class="chip" x="398" y="178" width="54" height="40" rx="4"/>
-    <rect x="406" y="187" width="38" height="22" rx="2" fill="var(--brand)" opacity=".55"/>
-    <text class="lbl" x="425" y="231" text-anchor="middle">ESP32</text>
+    <rect class="chip" x="398" y="178" width="54" height="38" rx="4"/>
+    <rect x="406" y="186" width="38" height="22" rx="2" fill="var(--brand)" opacity=".55"/>
+    <text class="lbl" x="425" y="229" text-anchor="middle">ESP32</text>
   </g>
   <g id="part-relay">
-    <rect class="chip" x="398" y="240" width="54" height="32" rx="4"/>
-    <path d="M406 256h10l-4 6h8l-4 6h12" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
-    <text class="lbl" x="425" y="285" text-anchor="middle">RELAY 6ch</text>
+    <rect class="chip" x="398" y="238" width="54" height="30" rx="4"/>
+    <path d="M406 252h10l-4 6h8l-4 6h12" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+    <text class="lbl" x="425" y="281" text-anchor="middle">RELAY 6ch</text>
   </g>
   <g id="part-oled">
-    <rect class="chip" x="398" y="294" width="54" height="30" rx="4"/>
-    <rect x="404" y="299" width="42" height="20" rx="2" fill="var(--ink)" opacity=".82"/>
-    <text class="oledtxt" x="425" y="312" text-anchor="middle">23.7 22.4</text>
-    <text class="lbl" x="425" y="337" text-anchor="middle">OLED</text>
+    <rect class="chip" x="398" y="290" width="54" height="28" rx="4"/>
+    <rect x="404" y="295" width="42" height="18" rx="2" fill="var(--ink)" opacity=".82"/>
+    <text class="oledtxt" x="425" y="307" text-anchor="middle">23.7 22.4</text>
+    <text class="lbl" x="425" y="330" text-anchor="middle">OLED</text>
   </g>
-  <!-- สวิตช์เลือกโหมด -->
+  <g id="part-ind">
+    <circle cx="409" cy="345" r="6" fill="var(--ind-y)"/>
+    <circle cx="429" cy="345" r="6" fill="var(--ind-g)"/>
+    <text class="lbl" x="425" y="362" text-anchor="middle">ไฟสถานะ</text>
+  </g>
   <g id="part-sw">
-    <circle cx="425" cy="362" r="13" fill="var(--surface-2)" stroke="var(--line-strong)" stroke-width="1.4"/>
-    <line x1="425" y1="362" x2="425" y2="352" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
-    <text class="lbl" x="425" y="390" text-anchor="middle">AUTO/OFF/MAN</text>
+    <circle cx="425" cy="382" r="11" fill="var(--surface-2)" stroke="var(--line-strong)" stroke-width="1.4"/>
+    <line x1="425" y1="382" x2="425" y2="374" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
+    <text class="lbl" x="425" y="400" text-anchor="middle">AUTO/OFF/MAN</text>
   </g>
-
-  <!-- สตริป RGBW ชั้นบน -->
-  <g id="part-strip">
-    <rect x="130" y="96" width="180" height="5" rx="2.5" fill="var(--glow)" opacity=".55"/>
-    <text class="lbl" x="316" y="100">RGBW</text>
-  </g>
-
-  <!-- ปั๊มน้ำ + ถังน้ำ -->
   <g id="part-pump">
     <rect class="box" x="386" y="424" width="76" height="88" rx="5"/>
     <rect class="water" x="390" y="466" width="68" height="42" rx="3"/>
@@ -1002,7 +875,6 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
 </svg>`;
   }
 
-  /* ---------- ประกอบหน้า ---------- */
   document.getElementById("rackHost").innerHTML = rackSVG();
   document.getElementById("figHost").insertAdjacentHTML("afterbegin", rackSVG());
   const figSVG = document.querySelector("#figHost .rack");
@@ -1010,381 +882,318 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
   const list = document.getElementById("partsList");
   list.innerHTML = PARTS.map(p => `
     <button class="part" type="button" aria-pressed="false" data-target="${p.id}">
-      <span class="ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"
-        stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"
-        aria-hidden="true"><path d="${p.ico}"/></svg></span>
-      <span>
-        <span class="en">${p.en}</span><span class="qty">${p.qty}</span><br>
-        <span class="th">${p.th}</span>
-        <span class="de">${p.de}</span>
-      </span>
+      <span class="ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+        stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${p.ico}"/></svg></span>
+      <span><span class="en">${p.en}</span><span class="qty">${p.qty}</span><br>
+        <span class="th">${p.th}</span><span class="de">${p.de}</span></span>
     </button>`).join("");
 
-  const INSIDE_BOX = ["part-esp32", "part-relay", "part-oled", "part-sw"];
-
+  const INSIDE_BOX = ["part-esp32","part-relay","part-oled","part-sw","part-ind"];
   let activePart = null;
   list.addEventListener("click", e => {
-    const btn = e.target.closest(".part");
-    if (!btn) return;
-    const id = btn.dataset.target;
-    const same = activePart === id;
-    list.querySelectorAll(".part").forEach(b => b.setAttribute("aria-pressed", "false"));
+    const btn = e.target.closest(".part"); if (!btn) return;
+    const id = btn.dataset.target, same = activePart === id;
+    list.querySelectorAll(".part").forEach(b => b.setAttribute("aria-pressed","false"));
     figSVG.querySelectorAll('g[id^="part-"]').forEach(g => g.classList.remove("on"));
     if (same) { activePart = null; figSVG.classList.remove("has-focus"); return; }
     activePart = id;
-    btn.setAttribute("aria-pressed", "true");
+    btn.setAttribute("aria-pressed","true");
     figSVG.classList.add("has-focus");
-    const g = figSVG.querySelector("#" + id);
-    if (g) g.classList.add("on");
+    figSVG.querySelector("#" + id)?.classList.add("on");
     if (INSIDE_BOX.includes(id)) figSVG.querySelector("#part-ctrlbox")?.classList.add("on");
-    if (id === "part-ds")        figSVG.querySelector("#part-tray")?.classList.add("on");
+    if (id === "part-ds")   figSVG.querySelector("#part-tray")?.classList.add("on");
+    if (id === "part-ind")  figSVG.querySelector("#part-pump")?.classList.add("on");
   });
 
-  /* ---------- เมนูมือถือ ---------- */
-  const burger = document.getElementById("burger");
-  const navlinks = document.getElementById("navlinks");
+  const burger = document.getElementById("burger"), navlinks = document.getElementById("navlinks");
   burger.addEventListener("click", () => {
     const open = navlinks.classList.toggle("open");
     burger.setAttribute("aria-expanded", String(open));
     burger.setAttribute("aria-label", open ? "ปิดเมนู" : "เปิดเมนู");
   });
   navlinks.addEventListener("click", e => {
-    if (e.target.tagName === "A") {
-      navlinks.classList.remove("open");
-      burger.setAttribute("aria-expanded", "false");
-    }
+    if (e.target.tagName === "A") { navlinks.classList.remove("open"); burger.setAttribute("aria-expanded","false"); }
   });
 
   /* =========================================================
-     สถานะที่แสดงบนหน้า — ใช้ชุดคีย์เดียวกับ JSON ที่ ESP32 ส่งมา
-       t1 t2 ta rh lux · ls ly lg f1 f2 pu · rc sp sl md h
+     สถานะ — คีย์ชุดเดียวกับ JSON ที่ ESP32 ส่งมา
+       t1 t2 ta rh lux · st sb f1 f2 pu ly · gd sg sp sl · md fm h
      ========================================================= */
-  const state = { t1: 23.6, t2: 22.8, ta: 23.2, rh: 63, lux: null,
-                  ls: false, ly: false, lg: false, f1: false, f2: false, pu: false,
-                  rc: "SPEC", sp: "VEG", sl: 0, md: "AUTO", h: 9.5, fm: "" };
+  const state = { t1:23.6, t2:22.8, ta:23.2, rh:63, lux:0,
+                  st:false, sb:false, f1:false, f2:false, pu:false, ly:false,
+                  gd:0, sg:"SEEDLING", sp:"SEEDLING", sl:0, md:"AUTO", fm:"", h:9.5 };
   const hist = [];
   let live = false, demoTimer = null;
 
   function pushHist() {
-    hist.push({ t1: state.t1, t2: state.t2, rh: state.rh, light: !!state.ls, pump: !!state.pu });
+    hist.push({ t1:state.t1, t2:state.t2, rh:state.rh, light:!!state.st, pump:!!state.pu });
     if (hist.length > 48) hist.shift();
   }
 
-  /* ---------- ตัวจำลอง เดินตามตรรกะเดียวกับเฟิร์มแวร์ ---------- */
   function step(dtH) {
     const prev = state.h;
     state.h = (state.h + dtH) % 24;
     const on = state.h >= CTRL.lightHours[0] && state.h < CTRL.lightHours[1];
-    state.ls = on;
-    state.ly = false;
-    state.lg = false;
+    state.st = on; state.sb = on; state.ly = on;
 
-    const noise = a => (Math.random() - 0.5) * a;
-    const k = Math.min(1, dtH * 1.1);
-    const base = 24.2 + (on ? 5.8 : 0);
-
-    // ชั้นบนร้อนกว่าเพราะความร้อนลอยขึ้น พัดลมของแต่ละชั้นดูอุณหภูมิของตัวเอง
-    const t1t = base + 0.9 - (state.f1 ? 3.2 : 0);
-    const t2t = base - 0.3 - (state.f2 ? 3.2 : 0);
-    state.t1 += (t1t - state.t1) * k * 0.8 + noise(0.16);
-    state.t2 += (t2t - state.t2) * k * 0.8 + noise(0.16);
+    const noise = a => (Math.random() - .5) * a;
+    const k = Math.min(1, dtH * 1.1), base = 24.2 + (on ? 5.8 : 0);
+    state.t1 += ((base + .9 - (state.f1 ? 3.2 : 0)) - state.t1) * k * .8 + noise(.16);
+    state.t2 += ((base - .3 - (state.f2 ? 3.2 : 0)) - state.t2) * k * .8 + noise(.16);
     state.t1 = Math.max(20, Math.min(34, state.t1));
     state.t2 = Math.max(20, Math.min(34, state.t2));
-
     if (!state.f1 && state.t1 > CTRL.fanOnC)  state.f1 = true;
     if ( state.f1 && state.t1 < CTRL.fanOffC) state.f1 = false;
     if (!state.f2 && state.t2 > CTRL.fanOnC)  state.f2 = true;
     if ( state.f2 && state.t2 < CTRL.fanOffC) state.f2 = false;
 
-    state.ta = (state.t1 + state.t2) / 2 + noise(0.2);
-    state.rh += ((67 - (state.f1 || state.f2 ? 6 : 0) - (on ? 3 : 0)) - state.rh) * k * 0.7 + noise(0.7);
+    state.ta  = (state.t1 + state.t2) / 2 + noise(.2);
+    state.lux = on ? 780 + noise(40) : 2 + Math.random() * 4;
+    state.rh += ((67 - ((state.f1 || state.f2) ? 6 : 0) - (on ? 3 : 0)) - state.rh) * k * .7 + noise(.7);
     state.rh = Math.max(45, Math.min(84, state.rh));
-
-    state.pu = CTRL.pumpTimes.some(t =>
-      prev <= state.h ? (t > prev && t <= state.h) : (t > prev || t <= state.h));
+    state.pu = CTRL.pumpTimes.some(t => prev <= state.h ? (t > prev && t <= state.h) : (t > prev || t <= state.h));
     state.md = "AUTO";
+    if (prev > state.h) state.gd++;                       // ข้ามเที่ยงคืน = อายุพืชเพิ่ม 1 วัน
+    const s = STAGES[stageOf(state.gd)];
+    state.sg = s.name; state.sp = s.name;
+    state.sl = on ? Math.min(100, state.sl + 12) : Math.max(0, state.sl - 12);
   }
-
-  for (let i = 0; i < 48; i++) { step(0.5); pushHist(); }
+  state.gd = 12;
+  for (let i = 0; i < 48; i++) { step(.5); pushHist(); }
 
   /* ---------- การ์ดพืช ---------- */
   const SCALE = [15, 35];
   const plantsHost = document.getElementById("plants");
-  plantsHost.innerHTML = PLANTS.map((p, i) => `
+  plantsHost.innerHTML = PLANTS.map((p,i) => `
     <div class="plant">
       <div class="row"><span class="nm">${p.nm} (${p.en})</span><span class="tier">${p.tier}</span></div>
       <div class="range" data-p="${i}">
-        <div class="range-hd">
-          <span>อุณหภูมิ <b class="cur">—</b>°C</span>
-          <span class="range-tag">—</span>
-        </div>
+        <div class="range-hd"><span>อุณหภูมิ <b class="cur">—</b>°C</span><span class="range-tag">—</span></div>
         <div class="range-bar"><span class="range-ok"></span><span class="range-pin"></span></div>
-        <div class="range-hd" style="opacity:.6">
-          <span>เหมาะสม ${p.t[0]}–${p.t[1]}°C</span><span></span>
-        </div>
-      </div>
-    </div>`).join("");
-
+        <div class="range-hd" style="opacity:.6"><span>เหมาะสม ${p.t[0]}–${p.t[1]}°C</span><span></span></div>
+      </div></div>`).join("");
   plantsHost.querySelectorAll(".range").forEach(el => {
-    const p = PLANTS[+el.dataset.p], [lo, hi] = SCALE;
-    const pct = v => ((v - lo) / (hi - lo)) * 100;
+    const p = PLANTS[+el.dataset.p], [lo,hi] = SCALE, pct = v => ((v-lo)/(hi-lo))*100;
     const ok = el.querySelector(".range-ok");
     ok.style.left = pct(p.t[0]) + "%";
     ok.style.width = (pct(p.t[1]) - pct(p.t[0])) + "%";
   });
 
+  /* ---------- แถบระยะการเจริญเติบโต ---------- */
+  const stageBar = document.getElementById("stageBar");
+  stageBar.innerHTML = STAGES.map(s => `
+    <div class="sseg" data-s="${s.name}">
+      <span class="sn">${s.name}</span>
+      <span class="sd">${s.th}</span>
+      <span class="sr">วันที่ ${s.from}${s.to === null ? "+" : "–" + s.to} · ${s.rb}</span>
+    </div>`).join("");
+
   /* ---------- กราฟ ---------- */
   const chart = document.getElementById("chart");
   function drawChart() {
-    const W = 640, H = 200, PT = 12, PB = 30, PL = 30, PR = 8;
-    const iw = W - PL - PR, ih = H - PT - PB;
-    const yT = v => PT + ih - ((v - 15) / 20) * ih;
-    const yH = v => PT + ih - ((v - 40) / 50) * ih;
-    const x = i => PL + (i / Math.max(1, hist.length - 1)) * iw;
-
+    const W=640,H=200,PT=12,PB=30,PL=30,PR=8, iw=W-PL-PR, ih=H-PT-PB;
+    const yT = v => PT + ih - ((v-15)/20)*ih;
+    const yH = v => PT + ih - ((v-40)/50)*ih;
+    const x = i => PL + (i/Math.max(1,hist.length-1))*iw;
     let g = "";
-    for (let i = 0; i < hist.length - 1; i++) {
-      if (!hist[i].light) continue;
-      g += `<rect class="band" x="${x(i).toFixed(1)}" y="${PT}" width="${(x(i + 1) - x(i) + 0.6).toFixed(1)}" height="${ih}"/>`;
+    for (let i=0;i<hist.length-1;i++) if (hist[i].light)
+      g += `<rect class="band" x="${x(i).toFixed(1)}" y="${PT}" width="${(x(i+1)-x(i)+.6).toFixed(1)}" height="${ih}"/>`;
+    for (let i=0;i<=4;i++) {
+      const yy = PT + (ih/4)*i;
+      g += `<line class="grid" x1="${PL}" y1="${yy}" x2="${W-PR}" y2="${yy}"/>`
+         + `<text class="axis" x="${PL-6}" y="${yy+3}" text-anchor="end">${35-i*5}</text>`;
     }
-    for (let i = 0; i <= 4; i++) {
-      const yy = PT + (ih / 4) * i;
-      g += `<line class="grid" x1="${PL}" y1="${yy}" x2="${W - PR}" y2="${yy}"/>` +
-           `<text class="axis" x="${PL - 6}" y="${yy + 3}" text-anchor="end">${35 - i * 5}</text>`;
-    }
-    const span = live ? "" : "-";
-    for (let i = 0; i < 4; i++)
-      g += `<text class="axis" x="${x(i * 12)}" y="${H - 12}" text-anchor="middle">${span}${24 - i * 6}${live ? "" : "ชม."}</text>`;
-    g += `<text class="axis" x="${x(hist.length - 1)}" y="${H - 12}" text-anchor="end">ตอนนี้</text>`;
-
+    for (let i=0;i<4;i++)
+      g += `<text class="axis" x="${x(i*12)}" y="${H-12}" text-anchor="middle">-${24-i*6}ชม.</text>`;
+    g += `<text class="axis" x="${x(hist.length-1)}" y="${H-12}" text-anchor="end">ตอนนี้</text>`;
     const path = (key, yf) => {
-      let d = "", started = false;
-      hist.forEach((row, i) => {
+      let d="", started=false;
+      hist.forEach((row,i) => {
         const v = row[key];
         if (v == null || isNaN(v)) { started = false; return; }
-        d += `${started ? "L" : "M"}${x(i).toFixed(1)} ${yf(v).toFixed(1)} `;
+        d += `${started?"L":"M"}${x(i).toFixed(1)} ${yf(v).toFixed(1)} `;
         started = true;
       });
       return d.trim();
     };
-
-    hist.forEach((d, i) => {
+    hist.forEach((d,i) => {
       if (!d.pump) return;
-      const bx = x(i), by = PT + ih;
-      g += `<path class="pumpmark" d="M${(bx - 3.5).toFixed(1)} ${by} L${(bx + 3.5).toFixed(1)} ${by} L${bx.toFixed(1)} ${by - 7} Z"/>`;
+      const bx=x(i), by=PT+ih;
+      g += `<path class="pumpmark" d="M${(bx-3.5).toFixed(1)} ${by} L${(bx+3.5).toFixed(1)} ${by} L${bx.toFixed(1)} ${by-7} Z"/>`;
     });
-
     let dots = "";
-    if (state.t1 != null) dots += `<circle cx="${x(hist.length - 1).toFixed(1)}" cy="${yT(state.t1).toFixed(1)}" r="3.5" fill="var(--accent)"/>`;
-    if (state.t2 != null) dots += `<circle cx="${x(hist.length - 1).toFixed(1)}" cy="${yT(state.t2).toFixed(1)}" r="3.5" fill="var(--glow)"/>`;
-
-    chart.innerHTML = g +
-      `<path class="l-h"  d="${path("rh", yH)}"/>` +
-      `<path class="l-t2" d="${path("t2", yT)}"/>` +
-      `<path class="l-t1" d="${path("t1", yT)}"/>` + dots;
+    if (state.t1 != null) dots += `<circle cx="${x(hist.length-1).toFixed(1)}" cy="${yT(state.t1).toFixed(1)}" r="3.5" fill="var(--accent)"/>`;
+    if (state.t2 != null) dots += `<circle cx="${x(hist.length-1).toFixed(1)}" cy="${yT(state.t2).toFixed(1)}" r="3.5" fill="var(--glow)"/>`;
+    chart.innerHTML = g + `<path class="l-h" d="${path("rh",yH)}"/>`
+      + `<path class="l-t2" d="${path("t2",yT)}"/>` + `<path class="l-t1" d="${path("t1",yT)}"/>` + dots;
   }
 
   /* ---------- แสดงผล ---------- */
-  const fmt = (v, dec, unit) =>
-    (v == null || isNaN(v)) ? `—<small>${unit}</small>` : `${(+v).toFixed(dec)}<small>${unit}</small>`;
-
-  function setPill(id, on) {
+  const fmt = (v,dec,unit) => (v==null||isNaN(v)) ? `—<small>${unit}</small>`
+                                                  : `${(+v).toFixed(dec)}<small>${unit}</small>`;
+  function setPill(id,on) {
     const el = document.getElementById(id);
     el.classList.toggle("on", !!on);
     el.querySelector(".tx").textContent = on ? "เปิด" : "ปิด";
   }
 
   function render() {
-    document.getElementById("vT1").innerHTML = fmt(state.t1, 1, "°C");
-    document.getElementById("vT2").innerHTML = fmt(state.t2, 1, "°C");
-    document.getElementById("vTa").innerHTML = fmt(state.ta, 1, "°C");
-    document.getElementById("vRh").innerHTML = fmt(state.rh, 0, "%");
-    setPill("pLs", state.ls); setPill("pLy", state.ly); setPill("pLg", state.lg);
-    setPill("pF1", state.f1); setPill("pF2", state.f2); setPill("pPu", state.pu);
+    document.getElementById("vT1").innerHTML  = fmt(state.t1,1,"°C");
+    document.getElementById("vT2").innerHTML  = fmt(state.t2,1,"°C");
+    document.getElementById("vTa").innerHTML  = fmt(state.ta,1,"°C");
+    document.getElementById("vRh").innerHTML  = fmt(state.rh,0,"%");
+    document.getElementById("vLux").innerHTML = fmt(state.lux,0,"lx");
+    setPill("pSt",state.st); setPill("pSb",state.sb);
+    setPill("pF1",state.f1); setPill("pF2",state.f2);
+    setPill("pPu",state.pu); setPill("pLy",state.ly);
+    document.getElementById("modeLabel").textContent = state.md || "—";
 
-    document.getElementById("modeLabel").textContent   = state.md || "—";
-    document.getElementById("recipeLabel").textContent = state.rc || "—";
+    // ระยะการเจริญเติบโต
+    const si = stageOf(state.gd), s = STAGES[si];
+    document.getElementById("stDay").textContent  = state.gd;
+    document.getElementById("stName").textContent = s.name + " · " + s.th;
+    document.getElementById("stMix").textContent  =
+      `R${s.r} G${s.g} B${s.b} W${s.w} · แดง:น้ำเงิน ${s.rb} · ${s.why}`;
+    // ผสมช่องขาวเข้าไปทุกช่องเพื่อประมาณสีที่ตาเห็น
+    const mix = (c) => Math.min(255, Math.round(c + s.w * .8));
+    document.getElementById("stSwatch").style.background =
+      `rgb(${mix(s.r)}, ${mix(s.g)}, ${mix(s.b)})`;
+    stageBar.querySelectorAll(".sseg").forEach(el =>
+      el.dataset.on = (el.dataset.s === s.name) ? "1" : "0");
 
     plantsHost.querySelectorAll(".range").forEach(el => {
-      const p = PLANTS[+el.dataset.p];
-      const v = state[p.key];
-      const [lo, hi] = SCALE, [a, b] = p.t;
-      const tag = el.querySelector(".range-tag");
-      const pin = el.querySelector(".range-pin");
+      const p = PLANTS[+el.dataset.p], v = state[p.key];
+      const [lo,hi] = SCALE, [a,b] = p.t;
+      const tag = el.querySelector(".range-tag"), pin = el.querySelector(".range-pin");
       if (v == null || isNaN(v)) {
         el.querySelector(".cur").textContent = "—";
         tag.textContent = "เซนเซอร์อ่านไม่ได้"; tag.className = "range-tag na";
-        pin.style.display = "none";
-        return;
+        pin.style.display = "none"; return;
       }
       pin.style.display = "";
       el.querySelector(".cur").textContent = (+v).toFixed(1);
-      pin.style.left = Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100)) + "%";
+      pin.style.left = Math.max(0, Math.min(100, ((v-lo)/(hi-lo))*100)) + "%";
       if (v > b)      { tag.textContent = "สูงกว่าช่วงเหมาะสม"; tag.className = "range-tag warn"; }
       else if (v < a) { tag.textContent = "ต่ำกว่าช่วงเหมาะสม"; tag.className = "range-tag cool"; }
       else            { tag.textContent = "อยู่ในช่วงเหมาะสม";  tag.className = "range-tag ok"; }
     });
 
-    document.querySelectorAll(".cones .cone").forEach(c => {
-      c.style.opacity = state.ls ? ".07" : "0";
-    });
-
+    document.querySelectorAll(".cones .cone").forEach(c => c.style.opacity = state.st ? ".07" : "0");
     const hh = Math.floor(state.h), mm = Math.round((state.h - hh) * 60);
     document.getElementById("simClock").textContent =
-      String(hh).padStart(2, "0") + ":" + String(mm % 60).padStart(2, "0");
+      String(hh).padStart(2,"0") + ":" + String(mm % 60).padStart(2,"0");
     drawChart();
   }
 
   /* =========================================================
-     เชื่อมต่อ ESP32 ผ่าน Web Serial
-     ESP32 พ่นบรรทัดขึ้นต้นด้วย "LW " ตามด้วย JSON ทุก 2 วินาที
+     Web Serial — ESP32 ส่งบรรทัด "LW {json}" ทุก 2 วินาที
      เว็บส่งตัวอักษร j ไปเปิดสตรีมให้เอง
-     ต้องเปิดหน้านี้ผ่าน https และใช้ Chrome หรือ Edge บนคอมพิวเตอร์
+     ต้องเปิดหน้านี้ผ่าน https และใช้ Chrome/Edge บนคอมพิวเตอร์
      ========================================================= */
-  const linkbar = document.getElementById("linkbar");
-  const linkTag = document.getElementById("linkTag");
-  const linkMsg = document.getElementById("linkMsg");
-  const btnLink = document.getElementById("btnLink");
+  const linkbar = document.getElementById("linkbar"), linkTag = document.getElementById("linkTag");
+  const linkMsg = document.getElementById("linkMsg"), btnLink = document.getElementById("btnLink");
   let port = null, keepReading = false, lastRx = 0, watchdog = null;
 
-  function setBar(stateName, tag, html, btnText, ghost) {
-    linkbar.dataset.state = stateName;
-    linkTag.textContent = tag;
-    linkMsg.innerHTML = html;
-    btnLink.textContent = btnText;
-    btnLink.classList.toggle("ghost", !!ghost);
+  function setBar(st,tag,html,btnText,ghost) {
+    linkbar.dataset.state = st; linkTag.textContent = tag; linkMsg.innerHTML = html;
+    btnLink.textContent = btnText; btnLink.classList.toggle("ghost", !!ghost);
   }
-
   function toDemo(reason) {
-    live = false;
-    keepReading = false;
+    live = false; keepReading = false;
     if (watchdog) { clearInterval(watchdog); watchdog = null; }
-    if (!demoTimer) demoTimer = setInterval(() => { step(0.5); pushHist(); render(); }, 2500);
+    if (!demoTimer) demoTimer = setInterval(() => { step(.5); pushHist(); render(); }, 2500);
     document.getElementById("clkLabel").textContent = "เวลาจำลอง";
-    setBar("demo", "DEMO",
+    setBar("demo","DEMO",
       (reason ? `<strong>${reason}</strong> ` : "") +
       "ตัวเลขบนหน้านี้เป็น<strong>ค่าจำลอง</strong> ที่สร้างจากตรรกะควบคุมชุดเดียวกับในเฟิร์มแวร์จริง",
       "เชื่อมต่อ ESP32 ผ่าน USB", false);
     renderCtrl();
   }
-
   function toLive() {
     live = true;
     if (demoTimer) { clearInterval(demoTimer); demoTimer = null; }
     hist.length = 0;
     document.getElementById("clkLabel").textContent = "เวลาในเครื่อง";
-    setBar("live", "LIVE",
-      "รับ<strong>ค่าจริง</strong>จากเครื่องผ่านสาย USB · อัปเดตทุก 2 วินาที",
-      "ตัดการเชื่อมต่อ", true);
+    setBar("live","LIVE","รับ<strong>ค่าจริง</strong>จากเครื่องผ่านสาย USB · อัปเดตทุก 2 วินาที",
+           "ตัดการเชื่อมต่อ", true);
     renderCtrl();
     lastRx = Date.now();
     watchdog = setInterval(() => {
-      if (live && Date.now() - lastRx > 9000) {
-        setBar("lost", "ขาดสัญญาณ",
-          "ไม่ได้รับข้อมูลจากเครื่องเกิน 9 วินาที — เช็กสาย USB หรือกด <code>j</code> ที่ Serial Monitor",
+      if (live && Date.now() - lastRx > 9000)
+        setBar("lost","ขาดสัญญาณ",
+          "ไม่ได้รับข้อมูลเกิน 9 วินาที — เช็กสาย USB หรือกด <code>j</code> ที่ Serial Monitor",
           "ตัดการเชื่อมต่อ", true);
-      }
     }, 3000);
   }
-
   function onLive(d) {
     lastRx = Date.now();
     if (linkbar.dataset.state === "lost") toLive();
-    ["t1","t2","ta","rh","lux","sl","h"].forEach(k => { if (k in d) state[k] = d[k]; });
-    ["ls","ly","lg","f1","f2","pu"].forEach(k => { if (k in d) state[k] = !!d[k]; });
-    if ("fm" in d) state.fm = d.fm || "";      // ชื่อโหมดที่ถูกบังคับ หรือ "" = ฟังสวิตช์
-    ["rc","sp","md"].forEach(k => { if (k in d) state[k] = d[k]; });
-    pushHist();
-    render();
-    renderCtrl();
+    ["t1","t2","ta","rh","lux","sl","h","gd"].forEach(k => { if (k in d) state[k] = d[k]; });
+    ["st","sb","f1","f2","pu","ly"].forEach(k => { if (k in d) state[k] = !!d[k]; });
+    ["sg","sp","md"].forEach(k => { if (k in d) state[k] = d[k]; });
+    if ("fm" in d) state.fm = d.fm || "";
+    pushHist(); render(); renderCtrl();
   }
-
   async function connect() {
     if (!("serial" in navigator)) {
-      setBar("lost", "ไม่รองรับ",
-        "เบราว์เซอร์นี้ไม่รองรับ Web Serial — ต้องใช้ <strong>Chrome หรือ Edge บนคอมพิวเตอร์</strong> และเปิดหน้าผ่าน https",
+      setBar("lost","ไม่รองรับ",
+        "เบราว์เซอร์นี้ไม่รองรับ Web Serial — ต้องใช้ <strong>Chrome หรือ Edge บนคอมพิวเตอร์</strong> และเปิดผ่าน https",
         "ลองอีกครั้ง", true);
       return;
     }
     try {
       port = await navigator.serial.requestPort();
       await port.open({ baudRate: 115200 });
-    } catch (e) {
-      toDemo("ยังไม่ได้เลือกพอร์ต");
-      return;
-    }
-    // สั่งให้เฟิร์มแวร์เริ่มสตรีม JSON
+    } catch (e) { toDemo("ยังไม่ได้เลือกพอร์ต"); return; }
     try {
       const w = port.writable.getWriter();
       await w.write(new TextEncoder().encode("j\n"));
       w.releaseLock();
     } catch (e) { /* เขียนไม่ได้ก็ยังอ่านได้ ถ้าเปิดสตรีมไว้แล้ว */ }
-
-    toLive();
-    keepReading = true;
-    readLoop();
+    toLive(); keepReading = true; readLoop();
   }
-
   async function readLoop() {
-    const dec = new TextDecoder();
-    let buf = "";
+    const dec = new TextDecoder(); let buf = "";
     while (keepReading && port && port.readable) {
       const reader = port.readable.getReader();
       try {
         while (keepReading) {
           const { value, done } = await reader.read();
           if (done) break;
-          buf += dec.decode(value, { stream: true });
+          buf += dec.decode(value, { stream:true });
           let i;
           while ((i = buf.indexOf("\n")) >= 0) {
-            const line = buf.slice(0, i).trim();
-            buf = buf.slice(i + 1);
+            const line = buf.slice(0,i).trim(); buf = buf.slice(i+1);
             if (line.startsWith("LW ")) {
-              try { onLive(JSON.parse(line.slice(3))); } catch (e) { /* บรรทัดไม่ครบ ข้ามไป */ }
-            } else if (line) {
-              logLine(line);          // ข้อความตอบกลับจากเฟิร์มแวร์ เอามาโชว์ให้เห็น
-            }
+              try { onLive(JSON.parse(line.slice(3))); } catch (e) {}
+            } else if (line) logLine(line);       // ข้อความตอบกลับจากเฟิร์มแวร์
           }
-          if (buf.length > 4000) buf = "";      // กันบัฟเฟอร์บวมถ้าไม่เจอ newline
+          if (buf.length > 4000) buf = "";
         }
-      } catch (e) {
-        // สายหลุดหรือพอร์ตถูกปิด
-      } finally {
-        try { reader.releaseLock(); } catch (e) {}
-      }
+      } catch (e) { /* สายหลุดหรือพอร์ตถูกปิด */ }
+      finally { try { reader.releaseLock(); } catch (e) {} }
       if (!keepReading) break;
       await new Promise(r => setTimeout(r, 300));
     }
   }
-
   async function disconnect() {
     keepReading = false;
     try { await port?.close(); } catch (e) {}
-    port = null;
-    toDemo("ตัดการเชื่อมต่อแล้ว");
+    port = null; toDemo("ตัดการเชื่อมต่อแล้ว");
   }
-
   btnLink.addEventListener("click", () => { live ? disconnect() : connect(); });
 
-  /* =========================================================
-     แผงสั่งงาน — ส่งตัวอักษรคำสั่งกลับไปที่ ESP32
-     เฟิร์มแวร์บังคับว่าคำสั่งสั่งโหลดต้องอยู่โหมด MANUAL เท่านั้น
-     ถ้าสวิตช์หน้ากล่องยังไม่ได้เดินสาย ใช้ปุ่มโหมดทดสอบบนโต๊ะ (คำสั่ง M)
-     ========================================================= */
-  const ctrlMode   = document.getElementById("ctrlMode");
-  const ctrlNote   = document.getElementById("ctrlNote");
-  const benchNote  = document.getElementById("benchNote");
-  const ctrlLog    = document.getElementById("ctrlLog");
-  const togBtns    = [...document.querySelectorAll("#ctrlToggles .cbtn")];
-  const actBtns    = [...document.querySelectorAll("#ctrlActions .cbtn")];
-  const modeBtns   = [...document.querySelectorAll("#ctrlModes .cbtn")];
+  /* ---------- แผงสั่งงาน ---------- */
+  const ctrlMode = document.getElementById("ctrlMode"), ctrlNote = document.getElementById("ctrlNote");
+  const benchNote = document.getElementById("benchNote"), ctrlLog = document.getElementById("ctrlLog");
+  const togBtns  = [...document.querySelectorAll("#ctrlToggles .cbtn")];
+  const actBtns  = [...document.querySelectorAll("#ctrlActions .cbtn")];
+  const modeBtns = [...document.querySelectorAll("#ctrlModes .cbtn")];
 
   function logLine(txt) {
-    const t = new Date().toLocaleTimeString("th-TH", { hour12: false });
-    ctrlLog.textContent = (t + "  " + txt + "\n" + ctrlLog.textContent)
-      .split("\n").slice(0, 12).join("\n");
+    const t = new Date().toLocaleTimeString("th-TH", { hour12:false });
+    ctrlLog.textContent = (t + "  " + txt + "\n" + ctrlLog.textContent).split("\n").slice(0,12).join("\n");
   }
-
   async function send(ch) {
     if (!live || !port || !port.writable) { logLine("ยังไม่ได้เชื่อมต่อ ส่งคำสั่งไม่ได้"); return; }
     try {
@@ -1392,28 +1201,25 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
       await w.write(new TextEncoder().encode(ch + "\n"));
       w.releaseLock();
       logLine("ส่งคำสั่ง '" + ch + "'");
-    } catch (e) {
-      logLine("ส่งคำสั่งไม่สำเร็จ: " + e.message);
-    }
+    } catch (e) { logLine("ส่งคำสั่งไม่สำเร็จ: " + e.message); }
   }
 
   function renderCtrl() {
-    const md = state.md || "—";
-    const forced = state.fm || "";                 // "" | "OFF" | "AUTO" | "MAN"
+    const md = state.md || "—", forced = state.fm || "";
     ctrlMode.textContent = "โหมด " + md + (forced ? " (สั่งจากเว็บ)" : "");
     ctrlMode.dataset.m = md;
 
     const canCmd = live && md === "MAN";
     togBtns.forEach(b => {
       b.disabled = !canCmd;
-      const on = !!state[b.dataset.key];
-      b.dataset.on = on ? "1" : "0";
-      b.querySelector(".st").textContent = on ? "เปิด" : "ปิด";
+      if (b.dataset.key) {
+        const on = !!state[b.dataset.key];
+        b.dataset.on = on ? "1" : "0";
+        b.querySelector(".st").textContent = on ? "เปิด" : "ปิด";
+      }
     });
-    actBtns.forEach(b => { b.disabled = !canCmd; });
-
-    // ปุ่มเลือกโหมดใช้ได้ทันทีที่เชื่อมต่อ ไม่ต้องรอ MANUAL
-    // แยกสองเรื่องออกจากกัน: ไฮไลต์บอกสถานะ · disabled บอกว่าเชื่อมต่ออยู่ไหม
+    // ปุ่มปรับสีสตริปกับอายุพืชใช้ได้ทุกโหมด ไม่ได้สั่งโหลด 220V
+    actBtns.forEach(b => { b.disabled = !live || (b.dataset.cmd === "x" && !canCmd); });
     modeBtns.forEach(b => {
       b.disabled = !live;
       b.dataset.on = (b.dataset.mode === forced) ? "1" : "0";
@@ -1422,25 +1228,22 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
     if (!live) {
       ctrlNote.className = "ctrl-note";
       ctrlNote.textContent = "เชื่อมต่อสาย USB ก่อนจึงจะสั่งงานได้ — กดปุ่มในแถบด้านบน";
-      benchNote.hidden = true;
-      return;
+      benchNote.hidden = true; return;
     }
-    if (md !== "MAN") {
-      ctrlNote.className = "ctrl-note warn";
+    ctrlNote.className = "ctrl-note warn";
+    if (md !== "MAN")
       ctrlNote.innerHTML = "ตอนนี้อยู่โหมด <b>" + md + "</b> เฟิร์มแวร์ล็อกปุ่มสั่งโหลดไว้ " +
-        "กด <b>MANUAL</b> ในแถวเลือกโหมดด้านล่าง หรือหมุนสวิตช์หน้ากล่อง";
-    } else {
-      ctrlNote.className = "ctrl-note warn";
-      ctrlNote.innerHTML = "<b>สั่งงานได้แล้ว</b> — ปุ่มหลอดไฟจะจ่ายไฟบ้าน 220V จริง " +
+        "กด <b>MANUAL</b> ในแถวเลือกโหมด หรือหมุนสวิตช์หน้าตู้ (ปุ่มปรับสีและอายุพืชยังใช้ได้)";
+    else
+      ctrlNote.innerHTML = "<b>สั่งงานได้แล้ว</b> — ปุ่มไฟปลูกจะจ่ายไฟบ้าน 220V จริง " +
         "เช็กว่ามือออกจากกล่องและปั๊มจุ่มอยู่ในถังน้ำก่อนกด";
-    }
 
     benchNote.hidden = !forced;
     if (forced === "AUTO")
       benchNote.innerHTML = "<b>บังคับ AUTO จากเว็บอยู่</b> — ระบบทำงานเองตามตารางเวลาและอุณหภูมิ " +
-        "ไฟปลูกพืชจะติดถ้าอยู่ในช่วงให้แสง 06:00–22:00 น.";
+        "ไฟปลูกจะติดถ้าอยู่ในช่วงให้แสง 06:00–22:00 น.";
     else if (forced)
-      benchNote.innerHTML = "<b>บังคับโหมด " + forced + " จากเว็บอยู่</b> — สถานะนี้หายเองเมื่อรีบูตบอร์ด " +
+      benchNote.innerHTML = "<b>บังคับโหมด " + forced + " จากเว็บอยู่</b> — หายเองเมื่อรีบูตบอร์ด " +
         "เดินระบบจริงควรกด <b>ฟังสวิตช์จริง</b> คืน";
   }
 
@@ -1454,12 +1257,8 @@ footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
     const b = e.target.closest(".cbtn"); if (b && !b.disabled) send(b.dataset.cmd);
   });
 
-  render();
-  toDemo();
-  renderCtrl();
-
-  // ทางเข้าสำหรับข้อมูลจากที่อื่น เช่น Firebase ในอนาคต
-  window.LW_push = onLive;
+  render(); toDemo(); renderCtrl();
+  window.LW_push = onLive;     // ทางเข้าสำหรับข้อมูลจากที่อื่น เช่น Firebase ในอนาคต
 })();
 </script>
 </body>
