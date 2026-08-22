@@ -428,6 +428,8 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
           <li><strong>สตริปเลือกสีเองได้</strong> 5 พรีเซ็ต + ผสม RGBW กำหนดเอง · สั่งเปิด–ปิดแยกจากหลอดได้</li>
           <li><strong>หน้าตรวจอุปกรณ์ 17 รายการ</strong> บอกทีละขาว่าอ่านค่าได้จริงหรือเพียงสั่งออกไป</li>
           <li><strong>บอกสาเหตุการรีบูต</strong> แยกไฟตก / โค้ดพัง / watchdog — ไฟตกแล้วดับสตริปเองกันวนรีบูต</li>
+          <li><strong>ส่งค่าขึ้นคลาวด์เองทุก 15 วินาที</strong> — เปิดเว็บนี้จากที่ไหนก็เห็นค่าจริง ไม่ต้องอยู่ใกล้เครื่อง</li>
+          <li><strong>เก็บประวัติขึ้นคลาวด์ทุก 5 นาที</strong> ใช้ทำกราฟย้อนหลังได้</li>
           <li>ส่งค่าจริงขึ้นหน้านี้ผ่านสาย USB และสั่งงานกลับได้</li>
         </ul>
       </div>
@@ -438,7 +440,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
           <li>การวัดการใช้พลังงานไฟฟ้า</li>
           <li>เซนเซอร์ความชื้นดิน — ปั๊มจึงรดตามเวลา ไม่ใช่ตามความชื้นจริง</li>
           <li>วาล์วแยกท่อ — ปั๊มตัวเดียวจึงรดทั้งสองชั้นพร้อมกัน</li>
-          <li>ดูจากนอกวง WiFi — เว็บในบอร์ดเปิดได้เฉพาะคนที่อยู่ WiFi เดียวกัน (ยังไม่ได้ส่งขึ้นคลาวด์)</li>
+          <li>สั่งงานจากนอกวง WiFi — คลาวด์เป็นอ่านอย่างเดียว สั่งงานต้องอยู่วงเดียวกันหรือต่อ USB</li>
           <li>นาฬิกาสำรอง — ไม่มี RTC ถ้าไม่มีเน็ตเลยต้องตั้งเวลาเอง (มีเน็ตใช้ NTP ได้)</li>
           <li>การหรี่ความสว่างหลอด 220V — รีเลย์ทำได้แค่เปิดกับปิด</li>
         </ul>
@@ -472,11 +474,13 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
     <div class="head">
       <div class="eyebrow">แดชบอร์ด</div>
       <h2>ค่าที่อ่านได้ ระยะการเจริญเติบโต และสถานะรีเลย์</h2>
-      <p>กดเชื่อมต่อสาย USB แล้วหน้านี้จะรับค่าจริงจากเครื่องทุก 2 วินาที และสั่งงานกลับได้</p>
-      <p class="note-wifi"><strong>หรือดูแบบไม่ต้องต่อสาย:</strong> ตัวเครื่องเสิร์ฟหน้าแดชบอร์ดของมันเองที่
-        <code>http://lightwise.local</code> — เปิดจากมือถือที่อยู่ WiFi เดียวกันได้เลย
-        ไม่ต้องมีอินเทอร์เน็ต ไม่ต้องมีคอมพิวเตอร์
-        <span class="dim">(หน้านี้ดึงข้อมูลจากบอร์ดโดยตรงไม่ได้ เพราะเปิดผ่าน https จึงเรียก http ในวงไม่ได้)</span></p>
+      <p>หน้านี้ดึงค่าจริงจากเครื่องผ่านคลาวด์ทุก 10 วินาที <strong>เปิดจากที่ไหนก็ได้</strong>
+        ไม่ต้องอยู่ใกล้เครื่อง ไม่ต้องต่อสาย</p>
+      <p class="note-wifi"><strong>ทางเข้าข้อมูลมี 3 ทาง</strong> —
+        <strong>คลาวด์</strong> เครื่องยิงค่าขึ้น Firebase ทุก 15 วินาที หน้านี้อ่านต่อ เปิดดูได้ทั่วโลก ·
+        <strong>ในวง WiFi เดียวกัน</strong> เปิด <code>http://lightwise.local</code> ได้หน้าควบคุมเต็มพร้อมสั่งงาน ·
+        <strong>สาย USB</strong> สำหรับตอนไม่มีเน็ตเลย
+        <span class="dim">(สั่งงานจากหน้านี้ทำได้เฉพาะตอนต่อ USB — ทางคลาวด์เป็นอ่านอย่างเดียว)</span></p>
     </div>
 
     <div class="linkbar" id="linkbar" data-state="demo">
@@ -653,6 +657,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
           <tr><th>สวิตช์หน้าตู้</th><td>LA38-11X2 บิดล็อค 2 จังหวะ (GPIO 19 / 23) · เลือกได้จากหน้าเว็บว่าให้สลับ AUTO↔MANUAL หรือ AUTO↔OFF</td></tr>
           <tr><th>การแสดงผล</th><td>จอ OLED SH1106 <span class="num">128×64</span> · <strong>เว็บในตัวบอร์ดผ่าน WiFi</strong> · CSV ทาง Serial</td></tr>
           <tr><th>เครือข่าย</th><td>จำ WiFi ได้ <span class="num">3</span> วง เข้าวงที่แรงสุดเอง · ไม่เจอเลยจะปล่อยวงของตัวเองชื่อ <code>LIGHTWISE</code></td></tr>
+          <tr><th>ส่งขึ้นคลาวด์</th><td>Firebase RTDB ผ่าน HTTPS — ค่าปัจจุบันทุก <span class="num">15</span> วินาที · ประวัติทุก <span class="num">5</span> นาที</td></tr>
           <tr><th>นาฬิกา</th><td>ดึงเวลาจริงจาก NTP (โซน ICT-7) ซิงก์ซ้ำทุกชั่วโมง · ไม่มีเน็ตก็นับเองต่อได้</td></tr>
           <tr><th>ตั้งค่าควบคุม</th><td>เวลาให้แสง · อุณหภูมิพัดลม · ความสว่างสตริป · สี — แก้จากเว็บ เก็บในบอร์ด <strong>ไม่ต้องคอมไพล์ใหม่</strong></td></tr>
           <tr><th>แหล่งจ่ายไฟ</th><td>Switching <span class="num">12V 5A</span> + LM2596 ลดเป็น 5V</td></tr>
@@ -1120,6 +1125,64 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
     linkbar.dataset.state = st; linkTag.textContent = tag; linkMsg.innerHTML = html;
     btnLink.textContent = btnText; btnLink.classList.toggle("ghost", !!ghost);
   }
+  /* ---------- อ่านค่าจริงจากคลาวด์ ----------
+     บอร์ด PUT ก้อน JSON เดียวขึ้น Firebase RTDB ทุก 15 วิ หน้านี้ GET ทุก 10 วิ
+     ทั้งสองฝั่งเป็น https จึงไม่ติด mixed-content เหมือนตอนเรียกบอร์ดตรง ๆ
+     ใช้ ep (epoch จากบอร์ด) วัดว่าข้อมูลเก่าไปแล้วกี่วินาที -- ถ้าไม่เช็ก
+     หน้าเว็บจะโชว์ค่าค้างของเมื่อวานอย่างมั่นใจโดยไม่มีใครรู้ */
+  const CLOUD_URL  = "https://iotoct-default-rtdb.asia-southeast1.firebasedatabase.app/lightwise/live.json";
+  const CLOUD_MS   = 10000;
+  const CLOUD_STALE = 120;      // วินาที เกินนี้ถือว่าเครื่องออฟไลน์
+  let cloudTimer = null, cloudOn = false;
+
+  function fmtAgo(sec) {
+    if (sec < 60) return Math.round(sec) + " วินาทีที่แล้ว";
+    if (sec < 3600) return Math.round(sec/60) + " นาทีที่แล้ว";
+    if (sec < 86400) return Math.round(sec/3600) + " ชั่วโมงที่แล้ว";
+    return Math.round(sec/86400) + " วันที่แล้ว";
+  }
+
+  async function cloudPoll() {
+    if (live) return;                       // ต่อ USB อยู่ ให้สายมาก่อนเสมอ
+    let d;
+    try {
+      const r = await fetch(CLOUD_URL + "?t=" + Date.now(), { cache: "no-store" });
+      d = await r.json();
+    } catch (e) { d = null; }
+    if (!d || typeof d !== "object") { if (cloudOn) cloudLost("ติดต่อคลาวด์ไม่ได้"); return; }
+
+    const age = d.ep ? (Date.now()/1000 - d.ep) : null;
+    if (age !== null && age > CLOUD_STALE) { cloudLost("เครื่องหยุดส่งข้อมูล ค่าล่าสุด " + fmtAgo(age)); applyCloud(d); return; }
+
+    if (!cloudOn) {
+      cloudOn = true;
+      if (demoTimer) { clearInterval(demoTimer); demoTimer = null; }
+      hist.length = 0;
+      document.getElementById("clkLabel").textContent = "เวลาบนเครื่อง";
+    }
+    setBar("live", "ค่าจริง",
+      "รับ<strong>ค่าจริงจากเครื่อง</strong>ผ่านคลาวด์" +
+      (age !== null ? " · อัปเดตเมื่อ " + fmtAgo(age) : "") +
+      " · เปิดดูได้จากทุกที่",
+      "เชื่อมต่อ ESP32 ผ่าน USB", true);
+    applyCloud(d);
+  }
+
+  function applyCloud(d) {
+    ["t1","t2","ta","rh","lux","sl","h","gd"].forEach(k => { if (k in d && d[k] !== null) state[k] = d[k]; });
+    ["st","sb","f1","f2","pu","ly"].forEach(k => { if (k in d) state[k] = !!d[k]; });
+    ["sg","sp","md"].forEach(k => { if (k in d) state[k] = d[k]; });
+    if ("fm" in d) state.fm = d.fm || "";
+    pushHist(); render(); renderCtrl();
+  }
+
+  function cloudLost(why) {
+    cloudOn = false;
+    setBar("lost", "ออฟไลน์",
+      why + " — เครื่องอาจถูกถอดปลั๊กหรือเน็ตหลุด ค่าที่เห็นคือค่าล่าสุดที่ส่งได้",
+      "เชื่อมต่อ ESP32 ผ่าน USB", true);
+  }
+
   function toDemo(reason) {
     live = false; keepReading = false;
     if (watchdog) { clearInterval(watchdog); watchdog = null; }
@@ -1280,7 +1343,12 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
   });
 
   render(); toDemo(); renderCtrl();
-  window.LW_push = onLive;     // ทางเข้าสำหรับข้อมูลจากที่อื่น เช่น Firebase ในอนาคต
+  window.LW_push = onLive;     // ทางเข้าสำหรับข้อมูลจากที่อื่น
+
+  /* ลองคลาวด์ก่อนเสมอ ได้ค่าจริงก็ใช้เลย · ไม่ได้ค่อยตกไปโหมดจำลอง
+     ตั้ง timer ไว้ตลอด เครื่องกลับมาออนไลน์เมื่อไหร่หน้าเว็บก็ไหลต่อเอง */
+  cloudPoll();
+  cloudTimer = setInterval(cloudPoll, CLOUD_MS);
 })();
 </script>
 </body>
