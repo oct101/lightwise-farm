@@ -448,6 +448,20 @@ section[data-page].pg-on.pg-first { border-top:0; }
 .lrb .ds { font-size:12.5px; color:var(--ink-2); line-height:1.5; }
 .lrb .rt { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
 .lrnote { margin-top:12px; font-size:12.5px; color:var(--muted); line-height:1.7; max-width:74ch; }
+
+/* ---------- ตัวเลือกพืช ---------- */
+.pickrow { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+           margin:14px 0 4px; }
+.pick { display:flex; flex-direction:column; gap:5px; }
+.pick .pl { font-family:var(--font-mono); font-size:11px; letter-spacing:.1em;
+            text-transform:uppercase; color:var(--muted); }
+.pick select { font:inherit; font-size:14.5px; padding:10px 12px; border-radius:8px;
+               border:1px solid var(--line); background:var(--surface); color:var(--ink);
+               cursor:pointer; }
+.pick select:disabled { opacity:.5; cursor:not-allowed; }
+.pick select:hover:not(:disabled) { border-color:var(--line-strong); }
+.picknote { font-size:12.5px; color:var(--muted); line-height:1.7; margin:8px 0 4px; max-width:76ch; }
+.picknote b { color:var(--warn); }
 </style>
 </head>
 <body>
@@ -688,8 +702,19 @@ section[data-page].pg-on.pg-first { border-top:0; }
     </div>
 
     <div class="panel" style="margin-top:12px">
-      <h3>ช่วงอุณหภูมิที่เหมาะสมของพืช</h3>
-      <div class="sub">TARGET RANGE · เทียบกับอุณหภูมิของชั้นนั้น</div>
+      <h3>พืชที่กำลังปลูก</h3>
+      <div class="sub">HYDROPONIC CROP · เลือกได้ทีละชั้น · ช่วงอุณหภูมิเปลี่ยนตามพืชที่เลือก</div>
+      <div class="pickrow">
+        <label class="pick">
+          <span class="pl">ชั้นบน</span>
+          <select id="selTop" disabled></select>
+        </label>
+        <label class="pick">
+          <span class="pl">ชั้นล่าง</span>
+          <select id="selBot" disabled></select>
+        </label>
+      </div>
+      <p class="picknote" id="pickNote"></p>
       <div id="plants"></div>
     </div>
 
@@ -892,6 +917,8 @@ section[data-page].pg-on.pg-first { border-top:0; }
   ];
   const stageOf = d => { let k=0; STAGES.forEach((s,i)=>{ if(d>=s.from) k=i; }); return k; };
 
+  /* ชื่อพืชและช่วงอุณหภูมิ = ค่าที่บอร์ดใช้จริง ไม่ใช่ค่าที่เว็บจำไว้เอง
+     ถ้าเครื่องยังไม่ส่งมา (ยังไม่ต่อ) ค่อยใช้ค่าเริ่มต้นด้านล่าง */
   const PLANTS = [
     { key:"t1", nm:"สลัด",    en:"Salad",    tier:"ชั้นบน · TOP",     t:[18,24] },
     { key:"t2", nm:"กวางตุ้ง", en:"Pak Choi", tier:"ชั้นล่าง · BOTTOM", t:[18,25] },
@@ -1153,20 +1180,47 @@ section[data-page].pg-on.pg-first { border-top:0; }
   /* ---------- การ์ดพืช ---------- */
   const SCALE = [15, 35];
   const plantsHost = document.getElementById("plants");
-  plantsHost.innerHTML = PLANTS.map((p,i) => `
-    <div class="plant">
-      <div class="row"><span class="nm">${p.nm} (${p.en})</span><span class="tier">${p.tier}</span></div>
-      <div class="range" data-p="${i}">
-        <div class="range-hd"><span>อุณหภูมิ <b class="cur">—</b>°C</span><span class="range-tag">—</span></div>
-        <div class="range-bar"><span class="range-ok"></span><span class="range-pin"></span></div>
-        <div class="range-hd" style="opacity:.6"><span>เหมาะสม ${p.t[0]}–${p.t[1]}°C</span><span></span></div>
-      </div></div>`).join("");
-  plantsHost.querySelectorAll(".range").forEach(el => {
-    const p = PLANTS[+el.dataset.p], [lo,hi] = SCALE, pct = v => ((v-lo)/(hi-lo))*100;
-    const ok = el.querySelector(".range-ok");
-    ok.style.left = pct(p.t[0]) + "%";
-    ok.style.width = (pct(p.t[1]) - pct(p.t[0])) + "%";
-  });
+  /* วาดแผงช่วงอุณหภูมิใหม่ทุกครั้งที่ข้อมูลเปลี่ยน
+     เดิมวาดครั้งเดียวตอนโหลด -- พอเปลี่ยนชนิดพืชแล้วช่วงเดิมจะค้างอยู่
+     ชื่อพืชและช่วงอุณหภูมิเอามาจากบอร์ด (ptn/ptr) ไม่ใช่ค่าที่เว็บจำไว้เอง
+     ถ้าสองฝั่งหลุดกันจะเห็นทันที ดีกว่าโชว์ค่าที่เครื่องไม่ได้ใช้ */
+  let plantsSig = "";
+  function renderPlants() {
+    const rows = [
+      { key:"t1", nm: state.ptn || PLANTS[0].nm, tier:"ชั้นบน · TOP",
+        t: state.ptr || PLANTS[0].t },
+      { key:"t2", nm: state.pbn || PLANTS[1].nm, tier:"ชั้นล่าง · BOTTOM",
+        t: state.pbr || PLANTS[1].t },
+    ];
+    const sig = JSON.stringify(rows);
+    if (sig === plantsSig) return;      // ไม่มีอะไรเปลี่ยน อย่าวาดซ้ำให้จอกระพริบ
+    plantsSig = sig;
+
+    plantsHost.textContent = "";
+    rows.forEach((p, i) => {
+      const wrap = document.createElement("div"); wrap.className = "plant";
+      wrap.innerHTML = `
+        <div class="row"><span class="nm"></span><span class="tier"></span></div>
+        <div class="range" data-p="${i}">
+          <div class="range-hd"><span>อุณหภูมิ <b class="cur">—</b>°C</span><span class="range-tag">—</span></div>
+          <div class="range-bar"><span class="range-ok"></span><span class="range-pin"></span></div>
+          <div class="range-hd" style="opacity:.6"><span class="okr"></span><span></span></div>
+        </div>`;
+      // ชื่อพืชมาจากเครื่อง = ข้อมูลที่เราไม่ได้เขียนเอง จึงใส่ด้วย textContent
+      wrap.querySelector(".nm").textContent = p.nm;
+      wrap.querySelector(".tier").textContent = p.tier;
+      wrap.querySelector(".okr").textContent = `เหมาะสม ${p.t[0]}–${p.t[1]}°C`;
+      plantsHost.append(wrap);
+    });
+
+    plantsHost.querySelectorAll(".range").forEach(el => {
+      const p = rows[+el.dataset.p], [lo,hi] = SCALE, pct = v => ((v-lo)/(hi-lo))*100;
+      const ok = el.querySelector(".range-ok");
+      ok.style.left = pct(p.t[0]) + "%";
+      ok.style.width = (pct(p.t[1]) - pct(p.t[0])) + "%";
+    });
+  }
+  renderPlants();
 
   /* ---------- แถบระยะการเจริญเติบโต ---------- */
   const stageBar = document.getElementById("stageBar");
@@ -1252,8 +1306,12 @@ section[data-page].pg-on.pg-first { border-top:0; }
       el.dataset.on = (el.dataset.s === s.name) ? "1" : "0");
 
     plantsHost.querySelectorAll(".range").forEach(el => {
-      const p = PLANTS[+el.dataset.p], v = state[p.key];
-      const [lo,hi] = SCALE, [a,b] = p.t;
+      /* ช่วงที่ใช้เทียบต้องมาจากพืชที่เครื่องเลือกอยู่จริง ไม่ใช่ค่าตายตัวในเว็บ
+         ไม่งั้นเปลี่ยนชนิดพืชแล้วป้ายจะบอกว่าอุณหภูมิผิดช่วงทั้งที่จริงอยู่ในช่วง */
+      const idx = +el.dataset.p;
+      const p = PLANTS[idx], v = state[p.key];
+      const rng = idx === 0 ? (state.ptr || p.t) : (state.pbr || p.t);
+      const [lo,hi] = SCALE, [a,b] = rng;
       const tag = el.querySelector(".range-tag"), pin = el.querySelector(".range-pin");
       if (v == null || isNaN(v)) {
         el.querySelector(".cur").textContent = "—";
@@ -1338,6 +1396,7 @@ section[data-page].pg-on.pg-first { border-top:0; }
     ["sg","sp","md"].forEach(k => { if (k in d) state[k] = d[k]; });
     if ("fm" in d) state.fm = d.fm || "";
     state.cc = !!d.cc;          // เครื่องเปิดรับคำสั่งจากคลาวด์อยู่ไหม
+    ["pt","pb","ptn","pbn","ptr","pbr"].forEach(k => { if (k in d) state[k] = d[k]; });
     pushHist(); render(); renderCtrl();
   }
 
@@ -1589,6 +1648,71 @@ section[data-page].pg-on.pg-first { border-top:0; }
           + "กลับไปเปลี่ยนสีเองตามอายุพืชได้ที่ปุ่ม \u201cสีสตริปถัดไป\u201d ในแผงควบคุม";
   }
 
+
+  /* ---------- เลือกพืชที่ปลูก ----------
+     ตารางนี้ต้องเรียงตรงกับ PLANTS[] ใน .ino เป๊ะ ๆ เพราะส่งกันด้วย index
+     (ส่งเป็นตัวเลขไม่ใช่ชื่อ เพราะคำสั่งผ่านคลาวด์รับได้แต่ตัวเลข)
+     ช่วงอุณหภูมิที่โชว์ดึงจากบอร์ดจริง (ptr/pbr) ไม่ได้ใช้ตารางนี้
+     -- ถ้าสองฝั่งหลุดกัน จะได้เห็นทันทีแทนที่จะโชว์ค่าที่ไม่ตรงกับที่เครื่องใช้ */
+  const CROPS = [
+    "สลัดกรีนโอ๊ค (Green Oak)", "สลัดคอส (Cos)", "กวางตุ้ง (Pak Choi)",
+    "คะน้า (Chinese Kale)", "ผักบุ้ง (Water Spinach)", "ผักกาดหอม (Butterhead)",
+    "โหระพา (Sweet Basil)", "ผักชี (Coriander)",
+  ];
+  const selTop = document.getElementById("selTop");
+  const selBot = document.getElementById("selBot");
+  for (const sel of [selTop, selBot]) {
+    if (!sel) continue;
+    CROPS.forEach((nm, i) => {
+      const o = document.createElement("option");
+      o.value = String(i); o.textContent = nm; sel.append(o);
+    });
+  }
+  let cropBusy = false;
+  function wireCrop(sel, key) {
+    if (!sel) return;
+    sel.addEventListener("change", async () => {
+      cropBusy = true;
+      const v = sel.value;
+      /* ใช้ช่อง /lightwise/cmd เดียวกับคำสั่งตัวอักษร แต่ส่งเป็น {k,v}
+         บอร์ดแยกได้เองว่าเป็นคำสั่งหรือการตั้งค่า -- ไม่ต้องมีอีกช่องให้ดูแล */
+      const id = cmdId = Math.max(cmdId + 1, Math.floor(Date.now()/1000));
+      try {
+        const r = await fetch(CMD_URL, {
+          method: "PUT", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ k: key, v: +v, id: id })
+        });
+        if (r.ok) {
+          logLine("ส่งเปลี่ยนพืช" + (key === "plantTop" ? "ชั้นบน" : "ชั้นล่าง") + " แล้ว — รอเครื่องรับ…");
+          waitAck(id, key);
+        } else logLine("ส่งไม่สำเร็จ (HTTP " + r.status + ")");
+      } catch (e) { logLine("ส่งไม่สำเร็จ: " + e.message); }
+      setTimeout(() => { cropBusy = false; }, 20000);
+    });
+  }
+  wireCrop(selTop, "plantTop");
+  wireCrop(selBot, "plantBot");
+
+  function renderCrops() {
+    const reach = live || (cloudOn && state.cc);
+    for (const sel of [selTop, selBot]) if (sel) sel.disabled = !reach;
+    if (!cropBusy) {
+      if (selTop && state.pt != null) selTop.value = String(state.pt);
+      if (selBot && state.pb != null) selBot.value = String(state.pb);
+    }
+    const n = document.getElementById("pickNote");
+    if (!n) return;
+    n.textContent = "";
+    if (!reach) { n.textContent = "ยังเปลี่ยนไม่ได้ — ต้องต่อคลาวด์และเปิดรับคำสั่งที่เครื่อง"; return; }
+    n.append(document.createTextNode(
+      "ทุกชนิดในรายการปลูกด้วยน้ำได้ · เปลี่ยนแล้วช่วงอุณหภูมิที่ใช้เตือนจะเปลี่ยนตาม · "));
+    const b = document.createElement("b");
+    b.textContent = "ช่วงเวลาให้แสงยังใช้ร่วมกันทั้งสองชั้น";
+    n.append(b);
+    n.append(document.createTextNode(
+      " เพราะหลอดคนละดวงแต่ตั้งตารางเดียวกัน — ถ้าปลูกพืชที่ต้องการแสงต่างกันมาก ต้องเลือกเองว่าจะยึดชั้นไหน"));
+  }
+
   function renderCtrl() {
     const md = state.md || "—", forced = state.fm || "";
     ctrlMode.textContent = "โหมด " + md + (forced ? " (สั่งจากเว็บ)" : "");
@@ -1617,9 +1741,11 @@ section[data-page].pg-on.pg-first { border-top:0; }
       ctrlNote.textContent = cloudOn
         ? "เครื่องปิดรับคำสั่งจากคลาวด์อยู่ — เปิดสวิตช์ \"รับคำสั่งจากคลาวด์\" ที่หน้าเว็บของบอร์ด (lightwise.local) หรือต่อสาย USB"
         : "ยังไม่ได้เชื่อมต่อเครื่อง — รอค่าจากคลาวด์ หรือกดต่อสาย USB ในแถบด้านบน";
-      benchNote.hidden = true; renderRecipes(); return;
+      benchNote.hidden = true; renderRecipes(); renderCrops(); return;
     }
     renderRecipes();
+    renderCrops();
+    renderPlants();
     ctrlNote.className = "ctrl-note warn";
     if (md !== "MAN")
       ctrlNote.innerHTML = "ตอนนี้อยู่โหมด <b>" + md + "</b> เฟิร์มแวร์ล็อกปุ่มสั่งโหลดไว้ " +
