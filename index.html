@@ -403,7 +403,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
       <div class="loop-arrow">→</div>
       <div class="loop-node">
         <span class="k">04 · Report</span><span class="t">แสดงผลและบันทึก</span>
-        <span class="d">จอ OLED หน้าเครื่อง · เว็บในตัวบอร์ดผ่าน WiFi · บันทึก CSV ทุกนาที</span>
+        <span class="d">จอ OLED หน้าเครื่อง · เว็บในตัวบอร์ดผ่าน WiFi · ตรวจอุปกรณ์ 17 รายการ · บันทึก CSV</span>
       </div>
     </div>
 
@@ -417,11 +417,17 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
           <li>พัดลม<strong>แยกชั้น</strong> เปิดตามอุณหภูมิของชั้นนั้นเอง</li>
           <li>รดน้ำอัตโนมัติตามตารางเวลา วันละ 3 ครั้ง</li>
           <li>ไฟแสดงสถานะหน้าตู้ 2 ดวง ทำงานตามโหลดให้เอง</li>
-          <li>สวิตช์หน้าตู้เลือก AUTO / OFF / MANUAL และสั่งโหมดจากเว็บได้</li>
+          <li>สวิตช์หน้าตู้สลับโหมด และสั่งโหมดจากเว็บได้</li>
           <li>นับอายุพืชเก็บในหน่วยความจำถาวร ไฟดับไม่หาย</li>
           <li><strong>ดูและสั่งงานจากมือถือแบบไร้สาย</strong> — บอร์ดเสิร์ฟหน้าเว็บเองที่ <code>lightwise.local</code></li>
           <li><strong>อัปโค้ดผ่าน WiFi (OTA)</strong> แก้โปรแกรมโดยไม่ต้องเสียบสาย</li>
-          <li>ปรับเกณฑ์ควบคุม (เวลาให้แสง · อุณหภูมิพัดลม · ความสว่าง) จากเว็บ <strong>ไม่ต้องคอมไพล์ใหม่</strong></li>
+          <li>ปรับเกณฑ์ควบคุมจากเว็บ <strong>ไม่ต้องคอมไพล์ใหม่</strong> — เวลาให้แสง · อุณหภูมิพัดลม · ความสว่าง · สีสตริป</li>
+          <li><strong>นาฬิกาตรงเวลาจริงจาก NTP</strong> ไฟดับแล้วกลับมาก็ยังตรง ไม่ต้องตั้งใหม่</li>
+          <li><strong>จำ WiFi ได้ 3 วง</strong> สแกนเองแล้วเข้าวงที่แรงสุด — ยกไปที่ไหนก็ต่อเอง</li>
+          <li><strong>หา WiFi ไม่เจอก็ปล่อยวงของตัวเอง</strong> พร้อมหน้าแดชบอร์ดเต็ม จอบอกวิธีเข้าให้เอง</li>
+          <li><strong>สตริปเลือกสีเองได้</strong> 5 พรีเซ็ต + ผสม RGBW กำหนดเอง · สั่งเปิด–ปิดแยกจากหลอดได้</li>
+          <li><strong>หน้าตรวจอุปกรณ์ 17 รายการ</strong> บอกทีละขาว่าอ่านค่าได้จริงหรือเพียงสั่งออกไป</li>
+          <li><strong>บอกสาเหตุการรีบูต</strong> แยกไฟตก / โค้ดพัง / watchdog — ไฟตกแล้วดับสตริปเองกันวนรีบูต</li>
           <li>ส่งค่าจริงขึ้นหน้านี้ผ่านสาย USB และสั่งงานกลับได้</li>
         </ul>
       </div>
@@ -433,7 +439,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
           <li>เซนเซอร์ความชื้นดิน — ปั๊มจึงรดตามเวลา ไม่ใช่ตามความชื้นจริง</li>
           <li>วาล์วแยกท่อ — ปั๊มตัวเดียวจึงรดทั้งสองชั้นพร้อมกัน</li>
           <li>ดูจากนอกวง WiFi — เว็บในบอร์ดเปิดได้เฉพาะคนที่อยู่ WiFi เดียวกัน (ยังไม่ได้ส่งขึ้นคลาวด์)</li>
-          <li>นาฬิกาจริง — ไม่มี RTC ไฟดับแล้วต้องตั้งเวลาใหม่จากหน้าเว็บ</li>
+          <li>นาฬิกาสำรอง — ไม่มี RTC ถ้าไม่มีเน็ตเลยต้องตั้งเวลาเอง (มีเน็ตใช้ NTP ได้)</li>
           <li>การหรี่ความสว่างหลอด 220V — รีเลย์ทำได้แค่เปิดกับปิด</li>
         </ul>
         <p class="scope-note">
@@ -514,12 +520,12 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
       <div class="tile state">
         <span class="k">ไฟปลูก · บน</span>
         <span class="v"><span class="pill" id="pSt" style="--c:var(--glow)"><span class="dot"></span><span class="tx">—</span></span></span>
-        <span class="s">GPIO 25</span>
+        <span class="s">GPIO 26</span>
       </div>
       <div class="tile state">
         <span class="k">ไฟปลูก · ล่าง</span>
         <span class="v"><span class="pill" id="pSb" style="--c:var(--glow)"><span class="dot"></span><span class="tx">—</span></span></span>
-        <span class="s">GPIO 26</span>
+        <span class="s">GPIO 25</span>
       </div>
       <div class="tile state">
         <span class="k">พัดลม · บน</span>
@@ -635,17 +641,20 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
           <tr><th>ขนาดโครงสร้าง</th><td><span class="num">กว้าง 70 × ลึก 45 × สูง 120</span> ซม.</td></tr>
           <tr><th>โครงหลัก</th><td>ท่อ PVC สีขาว 1 นิ้ว · คลุมพลาสติกโรงเรือน UV</td></tr>
           <tr><th>ชั้นปลูก</th><td>2 ชั้น — สลัด (ชั้นบน) และกวางตุ้ง (ชั้นล่าง)</td></tr>
-          <tr><th>ไฟปลูกพืช</th><td>หลอดสเปกตรัม 220V แยกชั้น — ชั้นบน GPIO 25 · ชั้นล่าง GPIO 26</td></tr>
+          <tr><th>ไฟปลูกพืช</th><td>หลอดสเปกตรัม 220V แยกชั้น — ชั้นบน GPIO 26 · ชั้นล่าง GPIO 25</td></tr>
           <tr><th>ช่วงเวลาให้แสง</th><td><span class="num">06:00–22:00</span> น. (16 ชั่วโมงต่อวัน)</td></tr>
-          <tr><th>ไฟเสริมปรับสี</th><td>สตริป SK6812 RGBW <span class="num">30</span> ดวง (GPIO 13) เปลี่ยนสีเองตาม 4 ระยะ</td></tr>
+          <tr><th>ไฟเสริมปรับสี</th><td>สตริป SK6812 RGBW <span class="num">30</span> ดวง (GPIO 13) — อัตโนมัติตาม 4 ระยะ หรือเลือกสีเอง 6 แบบ (รวมผสม RGBW กำหนดเอง)</td></tr>
           <tr><th>วัดอุณหภูมิ</th><td>DS18B20 กันน้ำ × 2 — ชั้นละ 1 ตัว (GPIO 32 / 33)</td></tr>
           <tr><th>วัดอากาศ</th><td>DHT22 (GPIO 4) และ BH1750 วัดความเข้มแสง (I2C)</td></tr>
           <tr><th>ระบายอากาศ</th><td>พัดลม DC <span class="num">12V</span> × 2 แยกชั้น · เปิดที่ <span class="num">29</span>°C ปิดที่ <span class="num">27</span>°C</td></tr>
           <tr><th>ระบบน้ำ</th><td>ปั๊มน้ำ (GPIO 17) ตั้งเวลา <span class="num">07:00 / 12:00 / 17:00</span> ครั้งละ <span class="num">20</span> วินาที</td></tr>
           <tr><th>ไฟแสดงสถานะ</th><td>เหลือง (GPIO 16) ตามไฟปลูก · เขียว ต่อขนานกับปั๊ม</td></tr>
           <tr><th>ระบบควบคุม</th><td>ESP32-D0WD-V3 + โมดูลรีเลย์ 2 ช่อง × 3 (รวม 6 ช่อง)</td></tr>
-          <tr><th>สวิตช์หน้าตู้</th><td>LA38-11X2 เลือก AUTO / OFF / MANUAL (GPIO 34 / 35)</td></tr>
-          <tr><th>การแสดงผล</th><td>จอ OLED SH1106 <span class="num">128×64</span> · เว็บผ่าน USB · CSV ทาง Serial</td></tr>
+          <tr><th>สวิตช์หน้าตู้</th><td>LA38-11X2 บิดล็อค 2 จังหวะ (GPIO 19 / 23) · เลือกได้จากหน้าเว็บว่าให้สลับ AUTO↔MANUAL หรือ AUTO↔OFF</td></tr>
+          <tr><th>การแสดงผล</th><td>จอ OLED SH1106 <span class="num">128×64</span> · <strong>เว็บในตัวบอร์ดผ่าน WiFi</strong> · CSV ทาง Serial</td></tr>
+          <tr><th>เครือข่าย</th><td>จำ WiFi ได้ <span class="num">3</span> วง เข้าวงที่แรงสุดเอง · ไม่เจอเลยจะปล่อยวงของตัวเองชื่อ <code>LIGHTWISE</code></td></tr>
+          <tr><th>นาฬิกา</th><td>ดึงเวลาจริงจาก NTP (โซน ICT-7) ซิงก์ซ้ำทุกชั่วโมง · ไม่มีเน็ตก็นับเองต่อได้</td></tr>
+          <tr><th>ตั้งค่าควบคุม</th><td>เวลาให้แสง · อุณหภูมิพัดลม · ความสว่างสตริป · สี — แก้จากเว็บ เก็บในบอร์ด <strong>ไม่ต้องคอมไพล์ใหม่</strong></td></tr>
           <tr><th>แหล่งจ่ายไฟ</th><td>Switching <span class="num">12V 5A</span> + LM2596 ลดเป็น 5V</td></tr>
           <tr><th>ความปลอดภัย</th><td>ฟิวส์ 2A · สวิตช์ตัดตอน · กล่องกันน้ำ · แยกโมดูลรีเลย์ 220V ออกจาก 12V</td></tr>
         </tbody>
@@ -722,10 +731,10 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
   ];
 
   const PARTS = [
-    { id:"part-spectop", en:"Spectrum Lamp · Top", qty:"GPIO 25", th:"หลอดสเปกตรัม ชั้นบน",
+    { id:"part-spectop", en:"Spectrum Lamp · Top", qty:"GPIO 26", th:"หลอดสเปกตรัม ชั้นบน",
       de:"แหล่งแสงหลักของชั้นบน ไฟบ้าน 220V ผ่านรีเลย์ เปิดตามช่วงเวลา 06:00–22:00 น. หรี่ความสว่างไม่ได้",
       ico:"M8 2a5 5 0 0 0-3 9v2h6v-2a5 5 0 0 0-3-9zM6 15h4M7 17h2" },
-    { id:"part-specbot", en:"Spectrum Lamp · Bottom", qty:"GPIO 26", th:"หลอดสเปกตรัม ชั้นล่าง",
+    { id:"part-specbot", en:"Spectrum Lamp · Bottom", qty:"GPIO 25", th:"หลอดสเปกตรัม ชั้นล่าง",
       de:"แหล่งแสงหลักของชั้นล่าง แยกรีเลย์คนละช่องกับชั้นบน จึงสั่งเปิด–ปิดทีละชั้นได้",
       ico:"M8 2a5 5 0 0 0-3 9v2h6v-2a5 5 0 0 0-3-9zM6 15h4M7 17h2" },
     { id:"part-strip", en:"SK6812 RGBW Strip", qty:"30 ดวง · GPIO 13", th:"สตริปไฟเสริม เปลี่ยนสีตามอายุพืช",
@@ -747,13 +756,13 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
       de:"เหลือง (GPIO 16) โค้ดสั่งตามไฟปลูกให้เอง · เขียว ต่อขนานกับปั๊ม ไม่ต้องสั่งแยก จึงบอกได้ว่ากำลังรดน้ำ",
       ico:"M8 2v5M8 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M3 12a6 6 0 0 1 10 0" },
     { id:"part-esp32", en:"ESP32 Controller", qty:"× 1", th:"ไมโครคอนโทรลเลอร์ ESP32",
-      de:"ESP32-D0WD-V3 ไม่มี PSRAM จึงใช้ GPIO 16/17 ได้ อ่านเซนเซอร์ ตัดสินใจ สั่งรีเลย์ และส่ง JSON ขึ้นเว็บผ่าน USB",
+      de:"ESP32-D0WD-V3 ไม่มี PSRAM จึงใช้ GPIO 16/17 ได้ · อ่านเซนเซอร์ ตัดสินใจ สั่งรีเลย์ และเสิร์ฟหน้าเว็บควบคุมเองผ่าน WiFi · อัปโค้ดใหม่ผ่านอากาศได้ (OTA) · ดึงเวลาจริงจาก NTP",
       ico:"M4 4h8v8H4zM6 1v3M10 1v3M6 12v3M10 12v3M1 6h3M1 10h3M12 6h3M12 10h3" },
     { id:"part-relay", en:"Relay Module 2ch", qty:"× 3", th:"โมดูลรีเลย์ 2 ช่อง สามตัว",
       de:"รวม 6 ช่อง จัดกลุ่มตามชนิดไฟ — ฝั่ง 220V สำหรับไฟปลูก 2 ชั้น ฝั่ง 12V สำหรับพัดลม ปั๊ม และไฟแสดงสถานะ ห้ามผสมบนแผ่นเดียวกัน",
       ico:"M2 5h5l-2 3h4l-2 3h5M2 11h3M11 5h3" },
-    { id:"part-sw", en:"Mode Selector", qty:"GPIO 34/35", th:"สวิตช์เลือกโหมดหน้าตู้",
-      de:"LA38-11X2 สามตำแหน่ง AUTO / OFF / MANUAL สองขานี้ไม่มีตัวต้านทานในตัว ต้องต่อ R pull-down 10k ลง GND เอง ไม่งั้นจะรับสัญญาณ 50 Hz จากสายไฟรอบตัว",
+    { id:"part-sw", en:"Mode Selector", qty:"GPIO 19/23", th:"สวิตช์เลือกโหมดหน้าตู้",
+      de:"LA38-11X2 บิดล็อค 2 จังหวะ สลับ AUTO ↔ MANUAL · ย้ายจาก GPIO 34/35 มา 19/23 เพราะสองขาเดิมไม่มีตัวต้านทานในตัว ขาจึงลอยแล้วรับ 50 Hz จากสายไฟรอบตัว · 19/23 มี pull-up ในตัว ไม่ต้องพึ่งตัวต้านทานภายนอกเลย",
       ico:"M8 2v5M8 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M3 12a6 6 0 0 1 10 0" },
     { id:"part-oled", en:"OLED SH1106", qty:"1.3 นิ้ว", th:"จอแสดงผล OLED",
       de:"จอ I2C 128×64 ชิป SH1106 ไม่ใช่ SSD1306 ถ้าใช้ไลบรารีผิดจอจะมืดสนิททั้งที่ I2C ตอบปกติ",
