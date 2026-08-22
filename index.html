@@ -333,6 +333,11 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
   .stagebar{grid-template-columns:repeat(2,1fr);}
 }
 @media (prefers-reduced-motion: reduce){ *{transition-duration:.01ms !important; animation-duration:.01ms !important;} }
+  .note-wifi{margin-top:10px;padding:10px 13px;border-radius:9px;
+    background:rgba(88,166,255,.09);border:1px solid rgba(88,166,255,.28);
+    font-size:.92rem;line-height:1.65}
+  .note-wifi code{font-size:.9em}
+  .note-wifi .dim{opacity:.72}
 </style>
 </head>
 <body>
@@ -398,7 +403,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
       <div class="loop-arrow">→</div>
       <div class="loop-node">
         <span class="k">04 · Report</span><span class="t">แสดงผลและบันทึก</span>
-        <span class="d">จอ OLED หน้าเครื่อง · ส่งค่าขึ้นเว็บผ่านสาย USB · บันทึก CSV ทุกนาที</span>
+        <span class="d">จอ OLED หน้าเครื่อง · เว็บในตัวบอร์ดผ่าน WiFi · บันทึก CSV ทุกนาที</span>
       </div>
     </div>
 
@@ -414,7 +419,10 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
           <li>ไฟแสดงสถานะหน้าตู้ 2 ดวง ทำงานตามโหลดให้เอง</li>
           <li>สวิตช์หน้าตู้เลือก AUTO / OFF / MANUAL และสั่งโหมดจากเว็บได้</li>
           <li>นับอายุพืชเก็บในหน่วยความจำถาวร ไฟดับไม่หาย</li>
-          <li>ส่งค่าจริงขึ้นเว็บผ่านสาย USB และสั่งงานกลับได้</li>
+          <li><strong>ดูและสั่งงานจากมือถือแบบไร้สาย</strong> — บอร์ดเสิร์ฟหน้าเว็บเองที่ <code>lightwise.local</code></li>
+          <li><strong>อัปโค้ดผ่าน WiFi (OTA)</strong> แก้โปรแกรมโดยไม่ต้องเสียบสาย</li>
+          <li>ปรับเกณฑ์ควบคุม (เวลาให้แสง · อุณหภูมิพัดลม · ความสว่าง) จากเว็บ <strong>ไม่ต้องคอมไพล์ใหม่</strong></li>
+          <li>ส่งค่าจริงขึ้นหน้านี้ผ่านสาย USB และสั่งงานกลับได้</li>
         </ul>
       </div>
       <div class="scope-col scope-no">
@@ -424,7 +432,8 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
           <li>การวัดการใช้พลังงานไฟฟ้า</li>
           <li>เซนเซอร์ความชื้นดิน — ปั๊มจึงรดตามเวลา ไม่ใช่ตามความชื้นจริง</li>
           <li>วาล์วแยกท่อ — ปั๊มตัวเดียวจึงรดทั้งสองชั้นพร้อมกัน</li>
-          <li>WiFi — ส่งข้อมูลผ่านสาย USB เท่านั้น ยังดูข้ามเครื่องไม่ได้</li>
+          <li>ดูจากนอกวง WiFi — เว็บในบอร์ดเปิดได้เฉพาะคนที่อยู่ WiFi เดียวกัน (ยังไม่ได้ส่งขึ้นคลาวด์)</li>
+          <li>นาฬิกาจริง — ไม่มี RTC ไฟดับแล้วต้องตั้งเวลาใหม่จากหน้าเว็บ</li>
           <li>การหรี่ความสว่างหลอด 220V — รีเลย์ทำได้แค่เปิดกับปิด</li>
         </ul>
         <p class="scope-note">
@@ -458,6 +467,10 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
       <div class="eyebrow">แดชบอร์ด</div>
       <h2>ค่าที่อ่านได้ ระยะการเจริญเติบโต และสถานะรีเลย์</h2>
       <p>กดเชื่อมต่อสาย USB แล้วหน้านี้จะรับค่าจริงจากเครื่องทุก 2 วินาที และสั่งงานกลับได้</p>
+      <p class="note-wifi"><strong>หรือดูแบบไม่ต้องต่อสาย:</strong> ตัวเครื่องเสิร์ฟหน้าแดชบอร์ดของมันเองที่
+        <code>http://lightwise.local</code> — เปิดจากมือถือที่อยู่ WiFi เดียวกันได้เลย
+        ไม่ต้องมีอินเทอร์เน็ต ไม่ต้องมีคอมพิวเตอร์
+        <span class="dim">(หน้านี้ดึงข้อมูลจากบอร์ดโดยตรงไม่ได้ เพราะเปิดผ่าน https จึงเรียก http ในวงไม่ได้)</span></p>
     </div>
 
     <div class="linkbar" id="linkbar" data-state="demo">
