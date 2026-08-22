@@ -431,6 +431,23 @@ section[data-page].pg-on { display:block; }
 /* section แรกที่โชว์ไม่ต้องมีเส้นคั่นบน */
 section[data-page].pg-on.pg-first { border-top:0; }
 .nav-links a[aria-current="page"] { color:var(--ink); background:var(--surface-2); font-weight:600; }
+
+/* ---------- ปุ่มโหมดแสงสาธิต ---------- */
+.lrgrid { display:grid; gap:10px; margin-top:14px;
+          grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); }
+.lrb { position:relative; text-align:left; font:inherit; cursor:pointer; padding:14px 14px 13px;
+       border-radius:var(--r); border:1px solid var(--line); background:var(--surface);
+       display:flex; gap:12px; align-items:flex-start; }
+.lrb:hover:not(:disabled) { border-color:var(--line-strong); }
+.lrb:disabled { opacity:.45; cursor:not-allowed; }
+.lrb[data-on="1"] { border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink); }
+.lrb .sw { width:26px; height:26px; border-radius:7px; flex:0 0 auto; margin-top:2px;
+           border:1px solid color-mix(in srgb, var(--ink) 14%, transparent); }
+.lrb .tx { display:flex; flex-direction:column; gap:2px; }
+.lrb .nm { font-weight:700; font-size:14.5px; letter-spacing:-.01em; }
+.lrb .ds { font-size:12.5px; color:var(--ink-2); line-height:1.5; }
+.lrb .rt { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+.lrnote { margin-top:12px; font-size:12.5px; color:var(--muted); line-height:1.7; max-width:74ch; }
 </style>
 </head>
 <body>
@@ -677,6 +694,13 @@ section[data-page].pg-on.pg-first { border-top:0; }
     </div>
 
     <!-- ---------- แผงสั่งงาน ---------- -->
+    <div class="panel">
+      <h3>โหมดแสงสำหรับสาธิต</h3>
+      <div class="sub">LIGHT RECIPE · กดแล้วสตริป RGBW เปลี่ยนสีทันที เห็นด้วยตาเปล่า</div>
+      <div class="lrgrid" id="lrGrid"></div>
+      <p class="lrnote" id="lrNote"></p>
+    </div>
+
     <div class="panel ctrl">
       <div class="ctrl-head">
         <div>
@@ -1506,6 +1530,65 @@ section[data-page].pg-on.pg-first { border-top:0; }
     }
   }
 
+
+  /* ---------- โหมดแสงสาธิต ----------
+     ปุ่มเดียว = เปิดสตริป + ตั้งสี พร้อมกัน (คำสั่ง q/e/r/t ที่เฟิร์มแวร์)
+     ทำรวมเป็นคำสั่งเดียวเพราะสั่งผ่านคลาวด์รอบละ ~15 วิ
+     ถ้าแยกเปิดกับตั้งสี กรรมการต้องยืนรอ 30 วิ กว่าจะเห็นอะไร
+
+     สีในสวอตช์คำนวณแบบเดียวกับที่สตริปผสมจริง (ขาวบวกเข้าทุกช่อง)
+     จะได้ไม่โชว์สีที่ของจริงทำไม่ได้ */
+  const RECIPES = [
+    { c:"q", key:"WHITE", nm:"โหมดปลูก",  ds:"เต็มสเปกตรัม ขาวเป็นหลัก — ใช้ตอนปลูกจริงและตอนถ่ายรูปเทียบใบ",
+      rgbw:[60,60,60,255], rt:"FULL SPECTRUM" },
+    { c:"e", key:"BLUE",  nm:"ใบหนา ต้นกระชับ", ds:"เพิ่มน้ำเงิน — ยับยั้งการยืดของลำต้น ใบหนาขึ้น",
+      rgbw:[190,40,150,60], rt:"แดง : น้ำเงิน  1.4 : 1" },
+    { c:"r", key:"RED",   nm:"เร่งการเติบโต", ds:"เพิ่มแดง — เร่งมวลชีวภาพ ใบขยายเร็ว",
+      rgbw:[255,25,45,70], rt:"แดง : น้ำเงิน  6.5 : 1" },
+    { c:"t", key:"DUO",   nm:"สาธิตสเปกตรัม", ds:"แดง+น้ำเงินล้วน ไม่มีขาว — สีม่วงแบบไฟปลูกที่คุ้นตา",
+      rgbw:[255,0,255,0], rt:"ไม่มีช่องขาว" },
+  ];
+
+  function swatchOf(r,g,b,w) {
+    const m = v => Math.round(Math.min(255, v + w * 0.8));
+    return `rgb(${m(r)},${m(g)},${m(b)})`;
+  }
+
+  const lrGrid = document.getElementById("lrGrid");
+  if (lrGrid) {
+    for (const R of RECIPES) {
+      const b = document.createElement("button");
+      b.className = "lrb"; b.dataset.k = R.key; b.disabled = true;
+      const sw = document.createElement("span");
+      sw.className = "sw"; sw.style.background = swatchOf(...R.rgbw);
+      const tx = document.createElement("span"); tx.className = "tx";
+      const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = R.nm;
+      const ds = document.createElement("span"); ds.className = "ds"; ds.textContent = R.ds;
+      const rt = document.createElement("span"); rt.className = "rt"; rt.textContent = R.rt;
+      tx.append(nm, ds, rt); b.append(sw, tx);
+      b.addEventListener("click", () => { if (!b.disabled) send(R.c); });
+      lrGrid.append(b);
+    }
+  }
+
+  function renderRecipes() {
+    if (!lrGrid) return;
+    const reach = live || (cloudOn && state.cc);
+    const now = state.sp || "";
+    for (const b of lrGrid.querySelectorAll(".lrb")) {
+      b.disabled = !reach || state.md === "OFF";
+      b.dataset.on = (b.dataset.k === now) ? "1" : "0";
+    }
+    const n = document.getElementById("lrNote");
+    if (!n) return;
+    n.textContent = !reach
+      ? "ยังสั่งงานไม่ได้ — ต้องต่อคลาวด์และเปิดรับคำสั่งที่เครื่อง หรือต่อสาย USB"
+      : state.md === "OFF"
+        ? "โหมด OFF บังคับดับสตริปเสมอ — สลับเป็น AUTO หรือ MANUAL ก่อน"
+        : "กดแล้วสตริปจะเปิดค้างและเปลี่ยนสีให้ทันที · สั่งผ่านคลาวด์ถึงเครื่องใน ~15 วินาที · "
+          + "กลับไปเปลี่ยนสีเองตามอายุพืชได้ที่ปุ่ม \u201cสีสตริปถัดไป\u201d ในแผงควบคุม";
+  }
+
   function renderCtrl() {
     const md = state.md || "—", forced = state.fm || "";
     ctrlMode.textContent = "โหมด " + md + (forced ? " (สั่งจากเว็บ)" : "");
@@ -1534,8 +1617,9 @@ section[data-page].pg-on.pg-first { border-top:0; }
       ctrlNote.textContent = cloudOn
         ? "เครื่องปิดรับคำสั่งจากคลาวด์อยู่ — เปิดสวิตช์ \"รับคำสั่งจากคลาวด์\" ที่หน้าเว็บของบอร์ด (lightwise.local) หรือต่อสาย USB"
         : "ยังไม่ได้เชื่อมต่อเครื่อง — รอค่าจากคลาวด์ หรือกดต่อสาย USB ในแถบด้านบน";
-      benchNote.hidden = true; return;
+      benchNote.hidden = true; renderRecipes(); return;
     }
+    renderRecipes();
     ctrlNote.className = "ctrl-note warn";
     if (md !== "MAN")
       ctrlNote.innerHTML = "ตอนนี้อยู่โหมด <b>" + md + "</b> เฟิร์มแวร์ล็อกปุ่มสั่งโหลดไว้ " +
