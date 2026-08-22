@@ -424,6 +424,13 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
 .waysin p { font-size:13.5px; color:var(--ink-2); padding:4px 0 8px; max-width:78ch; line-height:1.75; }
 .iodetail .tiles6 { margin-top:10px; }
 .dash-grid.one { grid-template-columns:1fr; }
+
+/* ---------- แบ่งเป็นหน้า ---------- */
+section[data-page] { display:none; }
+section[data-page].pg-on { display:block; }
+/* section แรกที่โชว์ไม่ต้องมีเส้นคั่นบน */
+section[data-page].pg-on.pg-first { border-top:0; }
+.nav-links a[aria-current="page"] { color:var(--ink); background:var(--surface-2); font-weight:600; }
 </style>
 </head>
 <body>
@@ -434,16 +441,16 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
       <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M0 1h16M0 6h16M0 11h16"/></svg>
     </button>
     <div class="nav-links" id="navlinks">
-      <a href="#how">การทำงาน</a>
-      <a href="#parts">ส่วนประกอบ</a>
-      <a href="#dashboard">แดชบอร์ด</a>
-      <a href="#history">ย้อนหลัง</a><a href="#spec">สเปก</a>
-      <a href="#team">ทีมงาน</a>
+      <a href="#home" data-go="home">ภาพรวม</a>
+      <a href="#dashboard" data-go="dashboard">แดชบอร์ด</a>
+      <a href="#history" data-go="history">ย้อนหลัง</a>
+      <a href="#machine" data-go="machine">ตัวเครื่อง</a>
+      <a href="#team" data-go="team">ทีมงาน</a>
     </div>
   </div>
 </nav>
 
-<section class="hero">
+<section class="hero" data-page="home">
   <div class="wrap hero-grid">
     <div>
       <div class="eyebrow hero-eyebrow">โครงงาน · ต้นแบบโรงเรือนปลูกพืชในร่ม</div>
@@ -464,7 +471,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
   </div>
 </section>
 
-<section id="how">
+<section id="how" data-page="home">
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">การทำงานของระบบ</div>
@@ -539,7 +546,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
   </div>
 </section>
 
-<section id="parts">
+<section id="parts" data-page="machine">
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">ส่วนประกอบของระบบ</div>
@@ -555,7 +562,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
   </div>
 </section>
 
-<section id="dashboard">
+<section id="dashboard" data-page="dashboard">
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">แดชบอร์ด</div>
@@ -711,7 +718,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
   </div>
 </section>
 
-<section id="history">
+<section id="history" data-page="history">
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">ข้อมูลย้อนหลัง</div>
@@ -764,7 +771,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
   </div>
 </section>
 
-<section id="spec">
+<section id="spec" data-page="machine">
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">สเปกต้นแบบ</div>
@@ -799,7 +806,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
   </div>
 </section>
 
-<section id="team">
+<section id="team" data-page="team">
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">ทีมงานและแผนงาน</div>
@@ -1801,6 +1808,57 @@ document.getElementById("hNote").textContent =
   "ช่วงที่เครื่องดับหรือเน็ตหลุดจะไม่มีจุด กราฟจะลากข้ามช่วงนั้น ไม่ได้แปลว่าค่านิ่ง";
 histLoad();
 setInterval(histLoad, 60000);
+
+/* ==========================================================================
+   แบ่งหน้า — หนึ่งหัวข้อต่อหนึ่งหน้า
+   --------------------------------------------------------------------------
+   ทำในไฟล์เดียวแทนการแยกเป็นหลายไฟล์ HTML โดยตั้งใจ:
+   nav / CSS / สคริปต์อ่านคลาวด์ มีชุดเดียว ไม่ต้องก๊อปไปทุกไฟล์
+   (วันนี้เพิ่งเจอปัญหาเว็บค้างคนละเวอร์ชันมาแล้ว การก๊อปมาร์กอัปซ้ำ 5 ที่
+    คือปัญหาเดียวกันในรูปแบบใหม่)
+   แต่ละหน้ายังมี URL ของตัวเอง ปุ่ม back/forward ใช้ได้ ส่งลิงก์ตรงหน้าได้
+   ========================================================================== */
+(function () {
+  const PAGES = ["home", "dashboard", "history", "machine", "team"];
+  const links = [...document.querySelectorAll(".nav-links a[data-go]")];
+
+  function show(page, push) {
+    if (!PAGES.includes(page)) page = "home";
+    let first = true;
+    document.querySelectorAll("section[data-page]").forEach(sec => {
+      const on = sec.dataset.page === page;
+      sec.classList.toggle("pg-on", on);
+      sec.classList.toggle("pg-first", on && first);
+      if (on) first = false;
+    });
+    links.forEach(a => {
+      const on = a.dataset.go === page;
+      if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+    document.title = ({
+      home: "LIGHTWISE FARM", dashboard: "แดชบอร์ด · LIGHTWISE FARM",
+      history: "ข้อมูลย้อนหลัง · LIGHTWISE FARM",
+      machine: "ตัวเครื่อง · LIGHTWISE FARM", team: "ทีมงาน · LIGHTWISE FARM"
+    })[page];
+    if (push && location.hash !== "#" + page) history.pushState({ page }, "", "#" + page);
+    window.scrollTo(0, 0);
+    // กราฟวาดตอนถูกซ่อนอยู่จะได้ความกว้าง 0 ต้องวาดใหม่ตอนหน้าถูกเปิด
+    if (page === "history" && typeof histRender === "function") histRender();
+  }
+
+  links.forEach(a => a.addEventListener("click", e => {
+    e.preventDefault();
+    show(a.dataset.go, true);
+    document.getElementById("navlinks")?.classList.remove("open");
+  }));
+  addEventListener("popstate", () => show(location.hash.slice(1), false));
+
+  // ลิงก์เก่าอย่าง #spec / #parts / #how ยังใช้ได้ ให้เด้งไปหน้าที่ถูก
+  const ALIAS = { how: "home", parts: "machine", spec: "machine" };
+  const start = location.hash.slice(1);
+  show(ALIAS[start] || start || "home", false);
+})();
+
 
 })();
 </script>
