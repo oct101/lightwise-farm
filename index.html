@@ -338,6 +338,73 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
     font-size:.92rem;line-height:1.65}
   .note-wifi code{font-size:.9em}
   .note-wifi .dim{opacity:.72}
+/* ---------- กราฟย้อนหลังจากคลาวด์ ---------- */
+.viz-root {
+  /* พาเลตต์จาก dataviz skill — สลอต 1-3 ผ่านการตรวจ CVD ทุกคู่ทั้งสองโหมด
+     ตัวเลขไม่ได้เลือกด้วยสายตา ผ่าน validate_palette.js แล้ว */
+  --surface-1: var(--surface);
+  --series-1: #2a78d6;   /* ชั้นบน */
+  --series-2: #eb6834;   /* ชั้นล่าง */
+  --series-3: #1baf7a;   /* อากาศ */
+  --grid: var(--line);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .viz-root {
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+  }
+}
+:root[data-theme="dark"] .viz-root {
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+}
+
+.hrange { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:20px; }
+.rbtn { font:inherit; font-size:13px; padding:7px 14px; border-radius:99px; cursor:pointer;
+        background:var(--surface); color:var(--ink-2); border:1px solid var(--line); }
+.rbtn:hover { border-color:var(--line-strong); color:var(--ink); }
+.rbtn.is-on { background:var(--ink); color:var(--bg); border-color:var(--ink); font-weight:600; }
+.hcount { margin-left:auto; font-family:var(--font-mono); font-size:12px; color:var(--muted); }
+
+.hgrid { display:grid; gap:16px; grid-template-columns:1fr; }
+@media (min-width:900px) { .hgrid { grid-template-columns:1fr 1fr; }
+  .hgrid .hcard:first-child { grid-column:1 / -1; } }
+
+.hcard { margin:0; background:var(--surface); border:1px solid var(--line);
+         border-radius:var(--r); padding:16px 16px 10px; }
+.hcard figcaption { display:flex; align-items:baseline; gap:8px; margin-bottom:2px; }
+.hct { font-weight:700; font-size:15px; }
+.hcu { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+
+.hlegend { display:flex; gap:16px; flex-wrap:wrap; margin:8px 0 4px; }
+.hlgi { display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-2); }
+.hlgk { width:16px; height:2px; border-radius:1px; flex:0 0 auto; }
+
+.hplot { position:relative; }
+.hplot svg { display:block; width:100%; height:auto; }
+.hplot .gl { stroke:var(--grid); stroke-width:1; }
+.hplot .axt { font-family:var(--font-mono); font-size:10px; fill:var(--muted); }
+.hplot .ln { fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+.hplot .dot { r:4; stroke:var(--surface); stroke-width:2; }
+.hplot .dlab { font-family:var(--font-mono); font-size:11px; font-weight:700; fill:var(--ink); }
+.hplot .cross { stroke:var(--line-strong); stroke-width:1; }
+.hplot .hit { fill:transparent; cursor:crosshair; }
+
+.htip { position:absolute; pointer-events:none; z-index:5; min-width:132px;
+        background:var(--surface); border:1px solid var(--line-strong); border-radius:8px;
+        padding:8px 10px; box-shadow:0 6px 20px rgba(0,0,0,.13); font-size:12.5px;
+        opacity:0; transition:opacity .12s; }
+.htip.on { opacity:1; }
+.htip .tt { font-family:var(--font-mono); font-size:11px; color:var(--muted); margin-bottom:5px; }
+.htip .tr { display:flex; align-items:center; gap:7px; margin-top:3px; }
+.htip .tk { width:14px; height:2px; border-radius:1px; flex:0 0 auto; }
+.htip .tv { font-family:var(--font-mono); font-weight:700; color:var(--ink); margin-left:auto; }
+.htip .tn { color:var(--ink-2); font-size:12px; }
+
+.hempty { padding:26px 4px; color:var(--muted); font-size:13.5px; text-align:center; }
+.htable { margin-top:20px; }
+.htable summary { cursor:pointer; font-size:13.5px; color:var(--ink-2); padding:8px 0; }
+.htable summary:hover { color:var(--ink); }
+.hnote { margin-top:14px; font-size:12.5px; color:var(--muted); max-width:70ch; }
+
 </style>
 </head>
 <body>
@@ -351,7 +418,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
       <a href="#how">การทำงาน</a>
       <a href="#parts">ส่วนประกอบ</a>
       <a href="#dashboard">แดชบอร์ด</a>
-      <a href="#spec">สเปก</a>
+      <a href="#history">ย้อนหลัง</a><a href="#spec">สเปก</a>
       <a href="#team">ทีมงาน</a>
     </div>
   </div>
@@ -630,6 +697,59 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
 
       <div class="ctrl-log" id="ctrlLog"></div>
     </div>
+  </div>
+</section>
+
+<section id="history">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">ข้อมูลย้อนหลัง</div>
+      <h2>กราฟจากค่าที่เครื่องเก็บขึ้นคลาวด์เอง</h2>
+      <p>เครื่องบันทึกค่าขึ้นคลาวด์ทุก 5 นาที หน้านี้ดึงมาวาดให้ —
+        <strong>เป็นข้อมูลจริงทั้งหมด</strong> ไม่ใช่ค่าจำลอง</p>
+    </div>
+
+    <div class="hrange" role="group" aria-label="เลือกช่วงเวลา">
+      <button class="rbtn is-on" data-h="6">6 ชม.</button>
+      <button class="rbtn" data-h="24">24 ชม.</button>
+      <button class="rbtn" data-h="72">3 วัน</button>
+      <button class="rbtn" data-h="168">7 วัน</button>
+      <span class="hcount" id="hCount">กำลังโหลด…</span>
+    </div>
+
+    <div class="hgrid viz-root">
+      <figure class="hcard">
+        <figcaption>
+          <span class="hct">อุณหภูมิ</span>
+          <span class="hcu">°C</span>
+        </figcaption>
+        <div class="hlegend" id="legTemp"></div>
+        <div class="hplot" id="plotTemp"></div>
+      </figure>
+
+      <figure class="hcard">
+        <figcaption>
+          <span class="hct">ความชื้นอากาศ</span>
+          <span class="hcu">%RH</span>
+        </figcaption>
+        <div class="hplot" id="plotRh"></div>
+      </figure>
+
+      <figure class="hcard">
+        <figcaption>
+          <span class="hct">ความเข้มแสง</span>
+          <span class="hcu">lux</span>
+        </figcaption>
+        <div class="hplot" id="plotLux"></div>
+      </figure>
+    </div>
+
+    <details class="htable">
+      <summary>ดูเป็นตาราง (ทุกค่าอ่านได้โดยไม่ต้องเอาเมาส์ชี้)</summary>
+      <div class="tablewrap"><table id="hTable"><tbody></tbody></table></div>
+    </details>
+
+    <p class="hnote" id="hNote"></p>
   </div>
 </section>
 
@@ -1349,6 +1469,245 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
      ตั้ง timer ไว้ตลอด เครื่องกลับมาออนไลน์เมื่อไหร่หน้าเว็บก็ไหลต่อเอง */
   cloudPoll();
   cloudTimer = setInterval(cloudPoll, CLOUD_MS);
+
+/* ==========================================================================
+   กราฟย้อนหลัง — อ่าน /lightwise/hist จากคลาวด์
+   --------------------------------------------------------------------------
+   แยกเป็น 3 กราฟตามหน่วย ไม่รวมแกนซ้าย-ขวา
+   (°C / %RH / lux อยู่คนละสเกล ถ้ายัดแกนคู่จะอ่านผิดได้ง่ายมาก)
+   อุณหภูมิ 3 เส้นใช้พาเลตต์ categorical สลอต 1-3 ที่ผ่านตรวจ CVD แล้ว
+   ความชื้นกับแสงอย่างละเส้นเดียว จึงไม่มีกล่อง legend (หัวการ์ดบอกอยู่แล้ว)
+   ========================================================================== */
+const HIST_URL = "https://lightwise-farm-2026-default-rtdb.asia-southeast1.firebasedatabase.app/lightwise/hist.json";
+let histRows = [], histHours = 6;
+
+const TSERIES = [
+  { k:"t1", name:"ชั้นบน",  css:"--series-1" },
+  { k:"t2", name:"ชั้นล่าง", css:"--series-2" },
+  { k:"ta", name:"อากาศ",   css:"--series-3" },
+];
+
+function cssv(n){ return getComputedStyle(document.querySelector(".viz-root")).getPropertyValue(n).trim(); }
+function fmtClock(ep){
+  const d = new Date(ep*1000);
+  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+function fmtDay(ep){
+  const d = new Date(ep*1000);
+  return d.getDate()+"/"+(d.getMonth()+1)+" "+fmtClock(ep);
+}
+function niceTicks(lo, hi, n){
+  if (hi - lo < 1e-6) { hi = lo + 1; }
+  const raw = (hi-lo)/n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1,2,2.5,5,10].map(m=>m*mag).find(s=>s>=raw) || 10*mag;
+  const out = []; for (let v = Math.ceil(lo/step)*step; v <= hi+1e-9; v += step) out.push(+v.toFixed(6));
+  return out.length >= 2 ? out : [lo, hi];
+}
+
+async function histLoad(){
+  const since = Math.floor(Date.now()/1000) - histHours*3600;
+  let raw = null;
+  try {
+    const r = await fetch(HIST_URL + '?orderBy="$key"&startAt="' + since + '"&limitToLast=600&t=' + Date.now(),
+                          { cache:"no-store" });
+    raw = await r.json();
+  } catch(e) { raw = null; }
+
+  histRows = [];
+  if (raw && typeof raw === "object") {
+    for (const k of Object.keys(raw).sort()) {
+      const v = raw[k]; if (!v || typeof v !== "object") continue;
+      histRows.push({ ep:+k, t1:v.t1, t2:v.t2, ta:v.ta, rh:v.rh, lux:v.lux, md:v.md, st:v.st, sb:v.sb });
+    }
+  }
+  histRender();
+}
+
+function histRender(){
+  const n = histRows.length;
+  document.getElementById("hCount").textContent =
+    n ? n + " จุด · ล่าสุด " + fmtDay(histRows[n-1].ep) : "ยังไม่มีข้อมูลในช่วงนี้";
+
+  drawMulti("plotTemp", TSERIES, "°C", 1);
+  drawMulti("plotRh",  [{k:"rh",  name:"ความชื้น", css:"--series-1"}], "%", 0);
+  drawMulti("plotLux", [{k:"lux", name:"แสง",     css:"--series-3"}], " lx", 0);
+
+  // legend เฉพาะกราฟที่มี 2 เส้นขึ้นไป — เส้นเดียวหัวการ์ดบอกแล้ว ไม่ต้องมีกล่อง
+  const lg = document.getElementById("legTemp");
+  lg.textContent = "";
+  for (const s of TSERIES) {
+    const d = document.createElement("span"); d.className = "hlgi";
+    const k = document.createElement("span"); k.className = "hlgk";
+    k.style.background = "var(" + s.css + ")";
+    const t = document.createElement("span"); t.textContent = s.name;
+    d.append(k, t); lg.append(d);
+  }
+  histTable();
+}
+
+function drawMulti(hostId, series, unit, dec){
+  const host = document.getElementById(hostId);
+  host.textContent = "";
+  const rows = histRows.filter(r => series.some(s => typeof r[s.k] === "number"));
+  if (rows.length < 2) {
+    const p = document.createElement("p"); p.className = "hempty";
+    p.textContent = rows.length ? "มีข้อมูลจุดเดียว ยังลากเส้นไม่ได้ — รออีกสักครู่"
+                                : "ยังไม่มีข้อมูลย้อนหลังในช่วงนี้ เครื่องเก็บทุก 5 นาที";
+    host.append(p); return;
+  }
+
+  const W = 760, H = 210, ml = 44, mr = 54, mt = 12, mb = 26;
+  const iw = W-ml-mr, ih = H-mt-mb;
+  let lo = Infinity, hi = -Infinity;
+  for (const r of rows) for (const s of series) {
+    const v = r[s.k]; if (typeof v === "number") { if (v<lo) lo=v; if (v>hi) hi=v; }
+  }
+  const pad = (hi-lo)*0.15 || 1; lo -= pad; hi += pad;
+  if (unit === "%") { lo = Math.max(0, lo); hi = Math.min(100, hi); }
+  if (unit === " lx") lo = Math.max(0, lo);
+
+  const t0 = rows[0].ep, t1 = rows[rows.length-1].ep, span = Math.max(1, t1-t0);
+  const X = ep => ml + (ep-t0)/span*iw;
+  const Y = v  => mt + (1-(v-lo)/(hi-lo))*ih;
+
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS,"svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("role","img");
+  svg.setAttribute("aria-label", series.map(s=>s.name).join(" ") + " ย้อนหลัง " + histHours + " ชั่วโมง");
+
+  // เส้นกริดแนวนอน hairline + ป้ายแกน Y
+  for (const tv of niceTicks(lo, hi, 4)) {
+    const y = Y(tv);
+    const g = document.createElementNS(NS,"line");
+    g.setAttribute("class","gl"); g.setAttribute("x1",ml); g.setAttribute("x2",ml+iw);
+    g.setAttribute("y1",y); g.setAttribute("y2",y); svg.append(g);
+    const tx = document.createElementNS(NS,"text");
+    tx.setAttribute("class","axt"); tx.setAttribute("x",ml-7); tx.setAttribute("y",y+3.5);
+    tx.setAttribute("text-anchor","end"); tx.textContent = tv.toFixed(dec);
+    svg.append(tx);
+  }
+  // ป้ายแกน X หัว-กลาง-ท้าย
+  for (const f of [0,.5,1]) {
+    const ep = t0 + span*f;
+    const tx = document.createElementNS(NS,"text");
+    tx.setAttribute("class","axt"); tx.setAttribute("x", X(ep));
+    tx.setAttribute("y", H-8);
+    tx.setAttribute("text-anchor", f===0?"start":f===1?"end":"middle");
+    tx.textContent = histHours > 24 ? fmtDay(ep) : fmtClock(ep);
+    svg.append(tx);
+  }
+
+  const ends = [];
+  for (const s of series) {
+    const pts = rows.filter(r => typeof r[s.k] === "number");
+    if (pts.length < 2) continue;
+    const col = "var(" + s.css + ")";
+    const path = document.createElementNS(NS,"path");
+    path.setAttribute("class","ln"); path.setAttribute("stroke", col);
+    path.setAttribute("d", pts.map((r,i)=>(i?"L":"M")+X(r.ep).toFixed(1)+" "+Y(r[s.k]).toFixed(1)).join(" "));
+    svg.append(path);
+
+    const last = pts[pts.length-1];
+    const dot = document.createElementNS(NS,"circle");
+    dot.setAttribute("class","dot"); dot.setAttribute("cx",X(last.ep)); dot.setAttribute("cy",Y(last[s.k]));
+    dot.setAttribute("fill", col); svg.append(dot);
+    ends.push({ x:X(last.ep), y:Y(last[s.k]), txt:last[s.k].toFixed(dec)+unit });
+  }
+
+  /* ป้ายค่าเฉพาะจุดสุดท้าย -- ไม่ติดป้ายทุกจุด
+     ถ้าเส้นวิ่งใกล้กัน ป้ายจะทับกันอ่านไม่ออก จึงดันแยกออกจากกันแนวตั้ง
+     ให้ห่างอย่างน้อย 13px แล้วบีบให้อยู่ในกรอบ ไม่ปล่อยให้ล้นออกนอกจอ */
+  ends.sort((a,b) => a.y - b.y);
+  const GAP = 13;
+  for (let i = 1; i < ends.length; i++)
+    if (ends[i].y - ends[i-1].y < GAP) ends[i].y = ends[i-1].y + GAP;
+  const over = ends.length ? ends[ends.length-1].y - (H-6) : 0;
+  if (over > 0) for (const e of ends) e.y -= over;
+  for (const e of ends) {
+    const lab = document.createElementNS(NS,"text");
+    lab.setAttribute("class","dlab");
+    lab.setAttribute("x", Math.min(W-4, e.x+9));
+    lab.setAttribute("y", Math.max(mt+8, e.y+4));
+    lab.textContent = e.txt;
+    svg.append(lab);
+  }
+
+  const cross = document.createElementNS(NS,"line");
+  cross.setAttribute("class","cross"); cross.setAttribute("y1",mt); cross.setAttribute("y2",mt+ih);
+  cross.style.display = "none"; svg.append(cross);
+
+  const hit = document.createElementNS(NS,"rect");
+  hit.setAttribute("class","hit"); hit.setAttribute("x",ml); hit.setAttribute("y",mt);
+  hit.setAttribute("width",iw); hit.setAttribute("height",ih);
+  hit.setAttribute("tabindex","0"); svg.append(hit);
+  host.append(svg);
+
+  const tip = document.createElement("div"); tip.className = "htip"; host.append(tip);
+
+  function show(clientX){
+    const bb = svg.getBoundingClientRect();
+    const vx = (clientX - bb.left) / bb.width * W;
+    const ep = t0 + (vx-ml)/iw*span;
+    let best = rows[0];
+    for (const r of rows) if (Math.abs(r.ep-ep) < Math.abs(best.ep-ep)) best = r;
+    cross.style.display = ""; cross.setAttribute("x1",X(best.ep)); cross.setAttribute("x2",X(best.ep));
+
+    tip.textContent = "";
+    const hd = document.createElement("div"); hd.className = "tt";
+    hd.textContent = fmtDay(best.ep); tip.append(hd);
+    for (const s of series) {
+      if (typeof best[s.k] !== "number") continue;
+      const row = document.createElement("div"); row.className = "tr";
+      const k = document.createElement("span"); k.className = "tk";
+      k.style.background = "var(" + s.css + ")";
+      const nm = document.createElement("span"); nm.className = "tn"; nm.textContent = s.name;
+      const vv = document.createElement("span"); vv.className = "tv";
+      vv.textContent = best[s.k].toFixed(dec)+unit;
+      row.append(k, nm, vv); tip.append(row);
+    }
+    tip.classList.add("on");
+    const px = X(best.ep)/W*host.clientWidth;
+    tip.style.left = Math.max(0, Math.min(host.clientWidth-146, px-73)) + "px";
+    tip.style.top  = "4px";
+  }
+  function hide(){ tip.classList.remove("on"); cross.style.display = "none"; }
+  hit.addEventListener("pointermove", e => show(e.clientX));
+  hit.addEventListener("pointerleave", hide);
+  hit.addEventListener("focus", () => show(svg.getBoundingClientRect().left + svg.getBoundingClientRect().width*0.98));
+  hit.addEventListener("blur", hide);
+}
+
+function histTable(){
+  const tb = document.querySelector("#hTable tbody");
+  tb.textContent = "";
+  const head = document.createElement("tr");
+  for (const h of ["เวลา","ชั้นบน °C","ชั้นล่าง °C","อากาศ °C","%RH","lux","โหมด"]) {
+    const th = document.createElement("th"); th.textContent = h; head.append(th);
+  }
+  tb.append(head);
+  for (const r of histRows.slice(-40).reverse()) {
+    const tr = document.createElement("tr");
+    const cells = [fmtDay(r.ep),
+      r.t1?.toFixed(1) ?? "–", r.t2?.toFixed(1) ?? "–", r.ta?.toFixed(1) ?? "–",
+      r.rh?.toFixed(0) ?? "–", r.lux ?? "–", r.md ?? "–"];
+    for (const c of cells) { const td = document.createElement("td"); td.textContent = c; tr.append(td); }
+    tb.append(tr);
+  }
+}
+
+document.querySelectorAll(".rbtn").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".rbtn").forEach(x => x.classList.remove("is-on"));
+  b.classList.add("is-on");
+  histHours = +b.dataset.h;
+  histLoad();
+}));
+document.getElementById("hNote").textContent =
+  "ข้อมูลมาจาก /lightwise/hist บน Firebase ที่เครื่องเขียนเองทุก 5 นาที · " +
+  "ช่วงที่เครื่องดับหรือเน็ตหลุดจะไม่มีจุด กราฟจะลากข้ามช่วงนั้น ไม่ได้แปลว่าค่านิ่ง";
+histLoad();
+setInterval(histLoad, 60000);
+
 })();
 </script>
 </body>
