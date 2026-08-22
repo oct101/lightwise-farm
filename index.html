@@ -405,6 +405,25 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
 .htable summary:hover { color:var(--ink); }
 .hnote { margin-top:14px; font-size:12.5px; color:var(--muted); max-width:70ch; }
 
+
+/* ---------- แดชบอร์ดฉบับย่อ ---------- */
+.iorow { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px;
+         background:var(--surface); border:1px solid var(--line);
+         border-radius:var(--r); padding:14px 16px; }
+.ioi { display:flex; align-items:center; gap:7px; font-size:14px; color:var(--ink-2);
+       padding:4px 2px; }
+.ioi .d { width:9px; height:9px; border-radius:50%; background:var(--off); flex:0 0 auto; }
+.ioi[data-on="1"] { color:var(--ink); font-weight:600; }
+.ioi[data-on="1"] .d { background:var(--c,var(--ok)); box-shadow:0 0 0 3px color-mix(in srgb,var(--c,var(--ok)) 22%,transparent); }
+.ioi .n { white-space:nowrap; }
+
+.waysin, .iodetail { margin-top:12px; }
+.waysin summary, .iodetail summary { cursor:pointer; font-size:13.5px; color:var(--ink-2);
+  padding:8px 0; list-style-position:outside; }
+.waysin summary:hover, .iodetail summary:hover { color:var(--ink); }
+.waysin p { font-size:13.5px; color:var(--ink-2); padding:4px 0 8px; max-width:78ch; line-height:1.75; }
+.iodetail .tiles6 { margin-top:10px; }
+.dash-grid.one { grid-template-columns:1fr; }
 </style>
 </head>
 <body>
@@ -540,24 +559,24 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">แดชบอร์ด</div>
-      <h2>ค่าที่อ่านได้ ระยะการเจริญเติบโต และสถานะรีเลย์</h2>
-      <p>หน้านี้ดึงค่าจริงจากเครื่องผ่านคลาวด์ทุก 10 วินาที <strong>เปิดจากที่ไหนก็ได้</strong>
-        ไม่ต้องอยู่ใกล้เครื่อง ไม่ต้องต่อสาย</p>
-      <p class="note-wifi"><strong>ทางเข้าข้อมูลมี 3 ทาง</strong> —
-        <strong>คลาวด์</strong> เครื่องยิงค่าขึ้น Firebase ทุก 15 วินาที หน้านี้อ่านต่อ เปิดดูได้ทั่วโลก ·
-        <strong>ในวง WiFi เดียวกัน</strong> เปิด <code>http://lightwise.local</code> ได้หน้าควบคุมเต็มพร้อมสั่งงาน ·
-        <strong>สาย USB</strong> สำหรับตอนไม่มีเน็ตเลย
-        <span class="dim">(สั่งงานจากหน้านี้ทำได้เฉพาะตอนต่อ USB — ทางคลาวด์เป็นอ่านอย่างเดียว)</span></p>
+      <h2>ตอนนี้เครื่องกำลังทำอะไรอยู่</h2>
+      <p>ค่าจริงจากเครื่องผ่านคลาวด์ <strong>เปิดจากที่ไหนก็ได้</strong></p>
     </div>
 
     <div class="linkbar" id="linkbar" data-state="demo">
       <span class="tag" id="linkTag">DEMO</span>
       <p class="msg" id="linkMsg">
         ตัวเลขบนหน้านี้เป็น<strong>ค่าจำลอง</strong> ที่สร้างจากตรรกะควบคุมชุดเดียวกับในเฟิร์มแวร์จริง
-        ถ้าเสียบสาย USB จากเครื่องอยู่ กดปุ่มขวาเพื่อดูค่าจริง
       </p>
       <button class="btn" id="btnLink">เชื่อมต่อ ESP32 ผ่าน USB</button>
     </div>
+
+    <details class="waysin">
+      <summary>เปิดดูจากทางอื่นได้อีก 2 ทาง</summary>
+      <p><strong>ในวง WiFi เดียวกัน</strong> — เปิด <code>http://lightwise.local</code>
+        ได้หน้าควบคุมเต็มของบอร์ดเอง ไม่ต้องมีอินเทอร์เน็ต ·
+        <strong>สาย USB</strong> — สำหรับตอนไม่มีเน็ตเลย ต่อแล้วหน้านี้จะรับค่าทางสายแทนคลาวด์</p>
+    </details>
 
     <div class="tiles">
       <div class="tile">
@@ -587,7 +606,12 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
       </div>
     </div>
 
-    <div class="tiles6">
+    <div class="iorow" id="ioRow" aria-label="อุปกรณ์ที่กำลังทำงาน"></div>
+
+    <details class="iodetail">
+      <summary>รายละเอียดช่าง — ขา GPIO ของแต่ละตัว</summary>
+      <div class="tiles6">
+
       <div class="tile state">
         <span class="k">ไฟปลูก · บน</span>
         <span class="v"><span class="pill" id="pSt" style="--c:var(--glow)"><span class="dot"></span><span class="tx">—</span></span></span>
@@ -619,22 +643,9 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
         <span class="s">GPIO 16 · ตามไฟปลูก</span>
       </div>
     </div>
+    </details>
 
-    <div class="dash-grid">
-      <div class="panel">
-        <h3>ประวัติอุณหภูมิสองชั้นและความชื้น</h3>
-        <div class="sub">24 ชั่วโมงล่าสุด · <span id="clkLabel">เวลาจำลอง</span> <span id="simClock">--:--</span> · โหมด <span id="modeLabel">—</span></div>
-        <svg class="chart" id="chart" viewBox="0 0 640 200" preserveAspectRatio="none" role="img"
-             aria-label="กราฟอุณหภูมิสองชั้นและความชื้นย้อนหลัง 24 ชั่วโมง พร้อมช่วงที่ไฟปลูกเปิดและจุดที่รดน้ำ"></svg>
-        <div class="legend">
-          <span><i style="background:var(--accent)"></i>อุณหภูมิชั้นบน</span>
-          <span><i style="background:var(--glow)"></i>อุณหภูมิชั้นล่าง</span>
-          <span><i style="background:var(--cool)"></i>ความชื้น (%)</span>
-          <span><b style="background:color-mix(in srgb, var(--glow) 22%, transparent)"></b>ช่วงที่ไฟปลูกเปิด</span>
-          <span style="color:var(--cool)">▲ รดน้ำ</span>
-        </div>
-      </div>
-
+    <div class="dash-grid one">
       <div class="panel">
         <h3>ระยะการเจริญเติบโต</h3>
         <div class="sub">GROWTH STAGE · สตริป RGBW ปรับสีตามระยะให้เอง</div>
@@ -663,7 +674,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
       <div class="ctrl-head">
         <div>
           <h3>สั่งงานเครื่องจากเว็บ</h3>
-          <div class="sub">ส่งคำสั่งกลับไปที่ ESP32 ผ่านสาย USB เส้นเดียวกับที่รับค่า</div>
+          <div class="sub">ส่งคำสั่งผ่านคลาวด์ (ถึงเครื่องใน ~15 วิ) · ต่อสาย USB อยู่จะส่งทางสายทันที</div>
         </div>
         <span class="modechip" id="ctrlMode" data-m="">โหมด —</span>
       </div>
@@ -1136,8 +1147,9 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
     </div>`).join("");
 
   /* ---------- กราฟ ---------- */
-  const chart = document.getElementById("chart");
+  const chart = document.getElementById("chart");   // ถูกลบออกจากหน้าแล้ว -- drawChart() จะ return ทันที
   function drawChart() {
+    if (!chart) return;   // กราฟเก่าถูกถอดออก กราฟจริงอยู่ section #history
     const W=640,H=200,PT=12,PB=30,PL=30,PR=8, iw=W-PL-PR, ih=H-PT-PB;
     const yT = v => PT + ih - ((v-15)/20)*ih;
     const yH = v => PT + ih - ((v-40)/50)*ih;
@@ -1193,7 +1205,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
     setPill("pSt",state.st); setPill("pSb",state.sb);
     setPill("pF1",state.f1); setPill("pF2",state.f2);
     setPill("pPu",state.pu); setPill("pLy",state.ly);
-    document.getElementById("modeLabel").textContent = state.md || "—";
+    const _ml = document.getElementById("modeLabel"); if (_ml) _ml.textContent = state.md || "—";
 
     // ระยะการเจริญเติบโต
     const si = stageOf(state.gd), s = STAGES[si];
@@ -1227,9 +1239,10 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
 
     document.querySelectorAll(".cones .cone").forEach(c => c.style.opacity = state.st ? ".07" : "0");
     const hh = Math.floor(state.h), mm = Math.round((state.h - hh) * 60);
-    document.getElementById("simClock").textContent =
+    const _sc = document.getElementById("simClock"); if (_sc) _sc.textContent =
       String(hh).padStart(2,"0") + ":" + String(mm % 60).padStart(2,"0");
     drawChart();
+    renderIoRow();
   }
 
   /* =========================================================
@@ -1278,7 +1291,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
       cloudOn = true;
       if (demoTimer) { clearInterval(demoTimer); demoTimer = null; }
       hist.length = 0;
-      document.getElementById("clkLabel").textContent = "เวลาบนเครื่อง";
+      const _cl = document.getElementById("clkLabel"); if (_cl) _cl.textContent = "เวลาบนเครื่อง";
     }
     setBar("live", "ค่าจริง",
       "รับ<strong>ค่าจริงจากเครื่อง</strong>ผ่านคลาวด์" +
@@ -1293,6 +1306,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
     ["st","sb","f1","f2","pu","ly"].forEach(k => { if (k in d) state[k] = !!d[k]; });
     ["sg","sp","md"].forEach(k => { if (k in d) state[k] = d[k]; });
     if ("fm" in d) state.fm = d.fm || "";
+    state.cc = !!d.cc;          // เครื่องเปิดรับคำสั่งจากคลาวด์อยู่ไหม
     pushHist(); render(); renderCtrl();
   }
 
@@ -1307,7 +1321,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
     live = false; keepReading = false;
     if (watchdog) { clearInterval(watchdog); watchdog = null; }
     if (!demoTimer) demoTimer = setInterval(() => { step(.5); pushHist(); render(); }, 2500);
-    document.getElementById("clkLabel").textContent = "เวลาจำลอง";
+    const _cl = document.getElementById("clkLabel"); if (_cl) _cl.textContent = "เวลาจำลอง";
     setBar("demo","DEMO",
       (reason ? `<strong>${reason}</strong> ` : "") +
       "ตัวเลขบนหน้านี้เป็น<strong>ค่าจำลอง</strong> ที่สร้างจากตรรกะควบคุมชุดเดียวกับในเฟิร์มแวร์จริง",
@@ -1318,7 +1332,7 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
     live = true;
     if (demoTimer) { clearInterval(demoTimer); demoTimer = null; }
     hist.length = 0;
-    document.getElementById("clkLabel").textContent = "เวลาในเครื่อง";
+    const _cl = document.getElementById("clkLabel"); if (_cl) _cl.textContent = "เวลาในเครื่อง";
     setBar("live","LIVE","รับ<strong>ค่าจริง</strong>จากเครื่องผ่านสาย USB · อัปเดตทุก 2 วินาที",
            "ตัดการเชื่อมต่อ", true);
     renderCtrl();
@@ -1399,14 +1413,90 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
     const t = new Date().toLocaleTimeString("th-TH", { hour12:false });
     ctrlLog.textContent = (t + "  " + txt + "\n" + ctrlLog.textContent).split("\n").slice(0,12).join("\n");
   }
-  async function send(ch) {
-    if (!live || !port || !port.writable) { logLine("ยังไม่ได้เชื่อมต่อ ส่งคำสั่งไม่ได้"); return; }
+  /* ---------- ส่งคำสั่ง ----------
+     ต่อ USB อยู่ -> ยิงตรงทางสาย เร็วและแน่นอนที่สุด
+     ไม่ได้ต่อ -> เขียนลง /lightwise/cmd แล้วรอบอร์ดมาอ่านตอนส่งค่ารอบถัดไป
+     ใช้ id เป็นเวลาปัจจุบัน กันบอร์ดทำคำสั่งเดิมซ้ำ (กด AUTO สองครั้งต้องนับสองครั้ง)
+     หน่วงได้ถึง ~15 วินาที เพราะบอร์ดถามคำสั่งรอบเดียวกับตอนส่งค่าขึ้น */
+  let cmdId = 0;
+  const CMD_URL = CLOUD_URL.replace("/live.json", "/cmd.json");
+  const ACK_URL = CLOUD_URL.replace("/live.json", "/ack.json");
+
+  async function sendCloud(ch) {
+    if (!cloudOn) { logLine("ยังไม่ได้เชื่อมต่อคลาวด์ ส่งคำสั่งไม่ได้"); return; }
+    if (!state.cc) {
+      logLine("เครื่องปิดรับคำสั่งจากคลาวด์อยู่ — เปิดที่หน้าเว็บของบอร์ด");
+      return;
+    }
+    /* id ต้องไม่เกิน 32 บิต -- เดิมส่ง Date.now() (มิลลิวินาที 13 หลัก)
+       ฝั่งบอร์ดอ่านล้นกลายเป็น 2147483647 ทุกคำสั่ง ทำให้ทำแค่ครั้งแรกแล้วเมินที่เหลือ
+       ใช้วินาทีแทน (10 หลัก) และบวกทีละ 1 ถ้ากดซ้ำในวินาทีเดียวกัน */
+    const id = cmdId = Math.max(cmdId + 1, Math.floor(Date.now()/1000));
     try {
-      const w = port.writable.getWriter();
-      await w.write(new TextEncoder().encode(ch + "\n"));
-      w.releaseLock();
-      logLine("ส่งคำสั่ง '" + ch + "'");
+      const r = await fetch(CMD_URL, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ c: ch, id: id })
+      });
+      if (!r.ok) { logLine("ส่งคำสั่งไม่สำเร็จ (HTTP " + r.status + ")"); return; }
+      logLine("ส่งคำสั่ง '" + ch + "' ขึ้นคลาวด์ — รอเครื่องรับ…");
+      waitAck(id, ch);
     } catch (e) { logLine("ส่งคำสั่งไม่สำเร็จ: " + e.message); }
+  }
+
+  /* รอ ack จากบอร์ด -- ยืนยันว่าเครื่องรับจริง ไม่ใช่แค่เขียนขึ้นคลาวด์สำเร็จ
+     ถ้าไม่ตอบใน 45 วิ ถือว่าเครื่องไม่ได้รับ (ดับ/เน็ตหลุด/ปิดรับคำสั่ง) */
+  async function waitAck(id, ch) {
+    const t0 = Date.now();
+    while (Date.now() - t0 < 45000) {
+      await new Promise(r => setTimeout(r, 3000));
+      try {
+        const a = await (await fetch(ACK_URL + "?t=" + Date.now(), { cache: "no-store" })).json();
+        if (a && a.id === id) {
+          logLine(a.ok ? "เครื่องรับคำสั่ง '" + ch + "' แล้ว"
+                       : "เครื่องปฏิเสธ '" + ch + "' — ไม่อยู่ในรายการที่ยอมรับจากคลาวด์");
+          return;
+        }
+      } catch (e) {}
+    }
+    logLine("ไม่ได้รับการยืนยันจากเครื่องใน 45 วินาที — เครื่องอาจดับหรือเน็ตหลุด");
+  }
+
+  async function send(ch) {
+    if (live && port && port.writable) {
+      try {
+        const w = port.writable.getWriter();
+        await w.write(new TextEncoder().encode(ch + "\n"));
+        w.releaseLock();
+        logLine("ส่งคำสั่ง '" + ch + "' ทางสาย USB");
+      } catch (e) { logLine("ส่งคำสั่งไม่สำเร็จ: " + e.message); }
+      return;
+    }
+    sendCloud(ch);
+  }
+
+  /* แถบ "อะไรเปิดอยู่บ้าง" — ตอบคำถามที่คนดูถามก่อนเสมอ ในบรรทัดเดียว
+     รายละเอียดขา GPIO ย้ายไปอยู่ใน <details> ข้างล่าง คนที่ต้องการค่อยกาง */
+  const IOROW = [
+    { k:"st", n:"ไฟปลูกบน",  c:"var(--glow)" },
+    { k:"sb", n:"ไฟปลูกล่าง", c:"var(--glow)" },
+    { k:"f1", n:"พัดลมบน",   c:"var(--cool)" },
+    { k:"f2", n:"พัดลมล่าง",  c:"var(--cool)" },
+    { k:"pu", n:"ปั๊มน้ำ",     c:"var(--ind-g)" },
+    { k:"ly", n:"ไฟเหลือง",   c:"var(--ind-y)" },
+  ];
+  const ioRow = document.getElementById("ioRow");
+  function renderIoRow() {
+    if (!ioRow) return;
+    ioRow.textContent = "";
+    for (const o of IOROW) {
+      const on = !!state[o.k];
+      const el = document.createElement("span");
+      el.className = "ioi"; el.dataset.on = on ? "1" : "0"; el.style.setProperty("--c", o.c);
+      const d = document.createElement("span"); d.className = "d";
+      const n = document.createElement("span"); n.className = "n";
+      n.textContent = o.n + " " + (on ? "เปิด" : "ปิด");
+      el.append(d, n); ioRow.append(el);
+    }
   }
 
   function renderCtrl() {
@@ -1414,7 +1504,9 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
     ctrlMode.textContent = "โหมด " + md + (forced ? " (สั่งจากเว็บ)" : "");
     ctrlMode.dataset.m = md;
 
-    const canCmd = live && md === "MAN";
+    /* สั่งได้ทั้งทาง USB และทางคลาวด์ (ถ้าเครื่องเปิดรับ) — เดิมดูแค่ USB */
+    const reach = live || (cloudOn && state.cc);
+    const canCmd = reach && md === "MAN";
     togBtns.forEach(b => {
       b.disabled = !canCmd;
       if (b.dataset.key) {
@@ -1424,15 +1516,17 @@ footer { border-top:1px solid var(--line); padding-block:40px 56px; }
       }
     });
     // ปุ่มปรับสีสตริปกับอายุพืชใช้ได้ทุกโหมด ไม่ได้สั่งโหลด 220V
-    actBtns.forEach(b => { b.disabled = !live || (b.dataset.cmd === "x" && !canCmd); });
+    actBtns.forEach(b => { b.disabled = !reach || (b.dataset.cmd === "x" && !canCmd); });
     modeBtns.forEach(b => {
-      b.disabled = !live;
+      b.disabled = !reach;
       b.dataset.on = (b.dataset.mode === forced) ? "1" : "0";
     });
 
-    if (!live) {
+    if (!reach) {
       ctrlNote.className = "ctrl-note";
-      ctrlNote.textContent = "เชื่อมต่อสาย USB ก่อนจึงจะสั่งงานได้ — กดปุ่มในแถบด้านบน";
+      ctrlNote.textContent = cloudOn
+        ? "เครื่องปิดรับคำสั่งจากคลาวด์อยู่ — เปิดสวิตช์ \"รับคำสั่งจากคลาวด์\" ที่หน้าเว็บของบอร์ด (lightwise.local) หรือต่อสาย USB"
+        : "ยังไม่ได้เชื่อมต่อเครื่อง — รอค่าจากคลาวด์ หรือกดต่อสาย USB ในแถบด้านบน";
       benchNote.hidden = true; return;
     }
     ctrlNote.className = "ctrl-note warn";
